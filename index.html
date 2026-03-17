@@ -3,88 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DarkFox AI Scanner</title>
-    <script defer src="dist/face-api.min.js"></script>
+    <title>DarkFox AI - Fix Edition</title>
+    <script defer src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.min.js"></script>
     <style>
-        :root {
-            --primary: #ff4d00; /* Fox Orange */
-            --bg: #0a0b10;
-            --accent: #58a6ff;
-        }
-
-        body { 
-            margin: 0; 
-            background: var(--bg); 
-            color: white; 
-            font-family: 'Segoe UI', sans-serif; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center;
-            min-height: 100vh;
-            overflow: hidden;
-        }
-
-        .header {
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .header h1 {
-            margin: 0;
-            font-size: 1.5rem;
-            letter-spacing: 3px;
-            color: var(--primary);
-            text-transform: uppercase;
-        }
-
-        .header p {
-            margin: 5px 0 0;
-            font-size: 0.7rem;
-            color: var(--accent);
-            opacity: 0.8;
-        }
-
-        .viewfinder { 
-            position: relative; 
-            border: 2px solid #30363d; 
-            border-radius: 4px; 
-            padding: 5px;
-            background: #161b22;
-            box-shadow: 0 0 30px rgba(255, 77, 0, 0.1);
-        }
-
-        video { display: block; background: #000; border-radius: 2px; }
-        canvas { position: absolute; top: 5px; left: 5px; }
-
-        .terminal {
-            margin-top: 20px;
-            width: 640px;
-            background: rgba(0, 0, 0, 0.8);
-            border-left: 3px solid var(--primary);
-            padding: 15px;
-            font-family: 'Courier New', monospace;
-            font-size: 0.9rem;
-        }
-
-        .label { color: var(--primary); font-weight: bold; }
-        .value { color: white; margin-right: 15px; }
+        :root { --primary: #ff4d00; --bg: #0a0b10; }
+        body { margin: 0; background: var(--bg); color: white; font-family: 'Courier New', monospace; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; }
+        .viewfinder { position: relative; border: 2px solid #30363d; background: #000; line-height: 0; }
+        canvas { position: absolute; top: 0; left: 0; }
+        .terminal { margin-top: 20px; width: 640px; padding: 15px; background: #161b22; border-left: 3px solid var(--primary); }
+        .label { color: var(--primary); }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>DarkFox AI</h1>
-        <p>FORKED BY SLABYLOL | BIOMETRIC UNIT v1.0</p>
-    </div>
+    <h1 style="color:var(--primary); letter-spacing: 5px;">DARKFOX AI</h1>
     
     <div class="viewfinder">
         <video id="video" width="640" height="480" autoplay muted></video>
     </div>
 
-    <div class="terminal" id="terminal">
+    <div class="terminal">
         <span class="label">> SYSTEM:</span> <span id="status">INITIATING...</span><br>
-        <span id="data-display">AWAITING FACE DETECTION...</span>
+        <div id="data-display">LOADING NEURAL WEIGHTS...</div>
     </div>
 
     <script>
@@ -92,29 +32,43 @@
         const status = document.getElementById('status');
         const dataDisplay = document.getElementById('data-display');
 
+        // Diese Funktion findet den richtigen Pfad zu deinem /weights Ordner
+        function getModelPath() {
+            const path = window.location.pathname;
+            if (path.includes('AIFaceScanner')) {
+                return '/AIFaceScanner/weights'; // Für GitHub Pages
+            }
+            return './weights'; // Für lokales Testen
+        }
+
         async function init() {
+            const MODEL_URL = getModelPath();
+            console.log("Loading models from:", MODEL_URL);
+
             try {
-                // Nutzt deinen weights-Ordner
                 await Promise.all([
-                    faceapi.nets.tinyFaceDetector.loadFromUri('./weights'),
-                    faceapi.nets.faceLandmark68Net.loadFromUri('./weights'),
-                    faceapi.nets.faceExpressionNet.loadFromUri('./weights'),
-                    faceapi.nets.ageGenderNet.loadFromUri('./weights')
+                    faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+                    faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+                    faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL),
+                    faceapi.nets.ageGenderNet.loadFromUri(MODEL_URL)
                 ]);
                 
                 status.innerText = "ONLINE";
                 status.style.color = "#00ff00";
+                dataDisplay.innerText = "WEIGHTS LOADED. STARTING CAMERA...";
                 startCamera();
             } catch (err) {
                 status.innerText = "ERROR LOADING WEIGHTS";
                 status.style.color = "red";
+                dataDisplay.innerHTML = "Check if folder <b>/weights</b> exists in your repo and contains .json and .shard1 files.";
+                console.error(err);
             }
         }
 
         function startCamera() {
             navigator.mediaDevices.getUserMedia({ video: {} })
-                .then(stream => video.srcObject = stream)
-                .catch(() => status.innerText = "CAMERA ACCESS DENIED");
+                .then(stream => { video.srcObject = stream; })
+                .catch(() => { status.innerText = "CAMERA ACCESS DENIED"; });
         }
 
         video.addEventListener('play', () => {
@@ -132,19 +86,13 @@
                 const resized = faceapi.resizeResults(detections, displaySize);
                 canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
                 
-                // Wir zeichnen die Boxen im Fox-Orange
                 faceapi.draw.drawDetections(canvas, resized);
                 faceapi.draw.drawFaceExpressions(canvas, resized);
 
                 if (resized.length > 0) {
                     const { age, gender, expressions } = resized[0];
                     const emotion = Object.keys(expressions).reduce((a, b) => expressions[a] > expressions[b] ? a : b);
-                    
-                    dataDisplay.innerHTML = `
-                        <span class="label">> AGE:</span> <span class="value">${Math.round(age)}</span>
-                        <span class="label">> GENDER:</span> <span class="value">${gender.toUpperCase()}</span>
-                        <span class="label">> MOOD:</span> <span class="value">${emotion.toUpperCase()}</span>
-                    `;
+                    dataDisplay.innerHTML = `> TARGET: ${gender.toUpperCase()} | AGE: ${Math.round(age)} | MOOD: ${emotion.toUpperCase()}`;
                 }
             }, 100);
         });
