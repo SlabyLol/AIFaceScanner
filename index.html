@@ -6,7 +6,9 @@
     <title>DarkFox AI Scanner</title>
     <script src="dist/face-api.min.js"></script>
     <style>
-        :root { --primary: #ff4d00; --bg: #000000; }
+        :root { --primary: #ff4d00; --bg: #050505; }
+        
+        * { box-sizing: border-box; }
         
         body { 
             margin: 0; 
@@ -18,115 +20,160 @@
             align-items: center; 
             justify-content: center; 
             min-height: 100vh;
-        }
-
-        .header { margin-bottom: 15px; text-align: center; }
-        .header h1 { color: var(--primary); letter-spacing: 5px; margin: 0; font-size: 1.5rem; }
-
-        .viewfinder { 
-            position: relative; 
-            width: 640px; 
-            height: 480px; 
-            background: #111;
-            border: 2px solid #333;
-            box-shadow: 0 0 20px rgba(255, 77, 0, 0.2);
             overflow: hidden;
         }
 
-        /* Verhindert, dass das Video weiß oder unsichtbar bleibt */
+        .header { margin-bottom: 20px; text-align: center; }
+        .header h1 { color: var(--primary); letter-spacing: 5px; margin: 0; font-size: 1.5rem; text-shadow: 0 0 10px rgba(255,77,0,0.5); }
+        .header p { margin: 5px 0 0; font-size: 0.8rem; color: #666; }
+
+        .viewfinder { 
+            position: relative; 
+            width: 90vw; 
+            max-width: 640px; 
+            height: 60vh;
+            max-height: 480px;
+            background: #111; 
+            border: 2px solid #333; 
+            box-shadow: 0 0 20px rgba(255, 77, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* iPad Fixes: playsinline und object-fit */
         video { 
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            z-index: 1;
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; 
+            z-index: 1; 
+            /* Spiegelt das Video wie einen echten Spiegel */
+            transform: scaleX(-1); 
         }
 
         canvas { 
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 2; /* Zeichnet über dem Video */
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            z-index: 2; 
+            /* Muss auch gespiegelt werden, damit die Boxen passen */
+            transform: scaleX(-1); 
         }
 
         .terminal { 
             margin-top: 20px; 
-            width: 620px; 
+            width: 90vw; 
+            max-width: 640px; 
             padding: 15px; 
             background: #0a0a0a; 
-            border-left: 3px solid var(--primary);
+            border-left: 3px solid var(--primary); 
             font-size: 0.85rem;
-            min-height: 50px;
+            min-height: 80px;
         }
 
-        .label { color: var(--primary); }
+        .label { color: var(--primary); font-weight: bold; }
+
+        /* Der Button, der das iPad-Problem löst */
+        #start-btn {
+            position: absolute;
+            z-index: 10;
+            background: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+            padding: 15px 30px;
+            font-family: 'Courier New', monospace;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: inset 0 0 10px rgba(255,77,0,0.2), 0 0 10px rgba(255,77,0,0.2);
+            transition: 0.3s;
+        }
+
+        #start-btn:active {
+            background: var(--primary);
+            color: black;
+        }
     </style>
 </head>
 <body>
 
     <div class="header">
         <h1>DARKFOX AI</h1>
-        <div id="status" style="font-size: 0.7rem; color: #555;">BOOTING...</div>
+        <p>BIOMETRIC SCAN UNIT</p>
     </div>
     
     <div class="viewfinder" id="wrapper">
+        <button id="start-btn">INITIALIZE SCANNER</button>
         <video id="video" autoplay muted playsinline webkit-playsinline></video>
     </div>
 
     <div class="terminal">
-        <div id="data-display">> INITIALIZING BIO-METRIC SCANNER...</div>
+        <div id="data-display">> SYSTEM WAITING FOR USER INITIALIZATION...</div>
     </div>
 
     <script>
         const video = document.getElementById('video');
-        const status = document.getElementById('status');
+        const startBtn = document.getElementById('start-btn');
         const dataDisplay = document.getElementById('data-display');
 
-        // Pfad-Logik für GitHub Pages
+        // Dynamischer Pfad zu deinen Modellen
         const repoName = window.location.pathname.split('/')[1];
         const MODEL_URL = window.location.hostname.includes('github.io') 
             ? `/${repoName}/weights/` 
             : './weights/';
 
-        async function startScanner() {
-            try {
-                status.innerText = "LOADING NEURAL NETWORKS...";
-                
-                // Laden der Modelle
-                await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
-                await faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL);
-                await faceapi.nets.ageGenderNet.loadFromUri(MODEL_URL);
-                
-                status.innerText = "SYSTEM ONLINE";
-                status.style.color = "#00ff00";
+        // Diese Funktion wird ERST aufgerufen, wenn du den Button klickst!
+        startBtn.addEventListener('click', async () => {
+            // Verstecke den Button
+            startBtn.style.display = 'none';
+            dataDisplay.innerHTML = "> ACCESSING NEURAL WEIGHTS... PLEASE WAIT.";
 
-                // Kamera Zugriff
+            try {
+                // 1. Modelle laden
+                await Promise.all([
+                    faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+                    faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL),
+                    faceapi.nets.ageGenderNet.loadFromUri(MODEL_URL)
+                ]);
+                
+                dataDisplay.innerHTML = "> SYSTEM ONLINE. REQUESTING CAMERA OVERRIDE...";
+
+                // 2. Kamera anfordern
                 const stream = await navigator.mediaDevices.getUserMedia({ 
                     video: { facingMode: "user" } 
                 });
                 video.srcObject = stream;
                 
-                // Erzwungener Start für Safari
-                video.play();
-                
-            } catch (err) {
-                status.innerText = "CRITICAL ERROR";
-                status.style.color = "red";
-                dataDisplay.innerText = "> ERROR: " + err.message;
-            }
-        }
+                // 3. Video zwingen abzuspielen (Apple braucht das nach dem Klick)
+                await video.play();
+                dataDisplay.innerHTML = "> CAMERA FEED ACTIVE. CALIBRATING...";
 
+            } catch (err) {
+                startBtn.style.display = 'block';
+                startBtn.innerText = "ERROR - RETRY";
+                dataDisplay.innerHTML = `<span style="color:red">> ERROR: ${err.message}</span><br>> Check camera permissions.`;
+                console.error(err);
+            }
+        });
+
+        // Wenn das Video läuft, starte die Erkennung
         video.addEventListener('play', () => {
+            // Canvas als Overlay für die Boxen erstellen
             const canvas = faceapi.createCanvasFromMedia(video);
             document.getElementById('wrapper').append(canvas);
             
-            const displaySize = { width: 640, height: 480 };
+            // Größe des Videos an das Canvas anpassen
+            const displaySize = { width: video.clientWidth, height: video.clientHeight };
             faceapi.matchDimensions(canvas, displaySize);
 
+            // Alle 150ms das Gesicht scannen
             setInterval(async () => {
                 const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
                     .withFaceExpressions()
@@ -134,25 +181,25 @@
 
                 const resized = faceapi.resizeResults(detections, displaySize);
                 
-                // Canvas leeren
+                // Vorheriges Bild löschen
                 const ctx = canvas.getContext('2d');
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 
-                // Ergebnisse zeichnen
+                // Neue Boxen zeichnen (Farbe wird über die Library definiert, blau standard)
                 faceapi.draw.drawDetections(canvas, resized);
                 faceapi.draw.drawFaceExpressions(canvas, resized);
 
+                // Terminal Text aktualisieren
                 if (resized.length > 0) {
                     const { age, gender, expressions } = resized[0];
+                    // Finde die stärkste Emotion
                     const emotion = Object.keys(expressions).reduce((a, b) => expressions[a] > expressions[b] ? a : b);
-                    dataDisplay.innerHTML = `<span class="label">> SCAN:</span> ${gender.toUpperCase()} | ~${Math.round(age)} YRS | ${emotion.toUpperCase()}`;
+                    dataDisplay.innerHTML = `<span class="label">> TARGET LOCKED:</span> GENDER: ${gender.toUpperCase()} | AGE: ~${Math.round(age)} | STATUS: ${emotion.toUpperCase()}`;
                 } else {
-                    dataDisplay.innerHTML = `<span class="label">> SCANNING...</span> NO TARGET FOUND`;
+                    dataDisplay.innerHTML = `<span class="label">> SCANNING:</span> NO TARGET DETECTED...`;
                 }
             }, 150);
         });
-
-        startScanner();
     </script>
 </body>
 </html>
