@@ -3,205 +3,214 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DarkFox AI - Biometric Terminal</title>
+    <title>DarkFox AI - Ultimate Terminal</title>
     <script src="dist/face-api.min.js"></script>
     <style>
-        /* COLOR THEME MATCHING YOUR LOGO (CYAN/BLUE) */
-        :root { 
-            --accent: #5efcff; 
-            --bg: #04080d; 
-            --panel: #0b141d; 
-            --border: #1a2f3f; 
-            --text: #e2f8ff; 
-        }
-        
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        
+        :root { --accent: #5efcff; --bg: #04080d; --panel: #0b141d; --border: #1a2f3f; --text: #e2f8ff; }
+        * { box-sizing: border-box; }
         body { 
             margin: 0; background: var(--bg); color: var(--text); 
-            font-family: 'Segoe UI', Tahoma, sans-serif; 
-            display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh;
+            font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; 
+            align-items: center; justify-content: center; min-height: 100vh;
         }
 
-        .main-container { width: 95vw; max-width: 720px; display: flex; flex-direction: column; gap: 12px; }
+        .main-container { width: 95vw; max-width: 720px; display: flex; flex-direction: column; gap: 10px; }
 
-        /* VIEWPORT (CAMERA) */
+        /* VIEWPORT */
         .viewport { 
             position: relative; width: 100%; aspect-ratio: 4/3;
             background: #000; border-radius: 12px; overflow: hidden; border: 2px solid var(--border);
-            box-shadow: 0 0 40px rgba(94, 252, 255, 0.15);
+            box-shadow: 0 0 40px rgba(94, 252, 255, 0.1);
         }
         video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
         canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 5; }
 
-        /* WATERMARK LOGO */
-        .watermark {
-            position: absolute; top: 15px; right: 15px; width: 55px; height: 55px;
-            z-index: 10; opacity: 0.6; pointer-events: none; display: none; border-radius: 50%;
+        /* FX OVERLAYS */
+        .scanlines {
+            position: absolute; inset: 0; z-index: 4; pointer-events: none;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%);
+            background-size: 100% 4px; display: none;
         }
 
-        /* INITIALIZATION SCREEN */
+        /* BOOT SCREEN */
         #overlay {
             position: absolute; inset: 0; background: var(--bg);
             display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 50;
         }
+        .boot-logo { width: 160px; height: 160px; border-radius: 50%; box-shadow: 0 0 30px var(--accent); margin-bottom: 25px; }
         
-        /* YOUR LOGO (IMG_0643.jpeg) */
-        .boot-logo { width: 180px; height: 180px; margin-bottom: 25px; border-radius: 50%; box-shadow: 0 0 30px var(--accent); }
-        
-        #start-btn {
-            padding: 15px 45px; background: transparent; color: var(--accent);
+        .btn {
+            padding: 12px 25px; background: transparent; color: var(--accent);
             border: 2px solid var(--accent); border-radius: 6px; font-weight: 800; cursor: pointer;
-            letter-spacing: 2px; text-transform: uppercase; transition: 0.3s;
+            text-transform: uppercase; letter-spacing: 1px; font-size: 12px; transition: 0.3s;
         }
-        #start-btn:hover { background: var(--accent); color: #000; }
-        
-        .loader { display: none; width: 260px; text-align: center; }
-        .bar-bg { width: 100%; height: 4px; background: #1e293b; margin: 15px 0; overflow: hidden; border-radius: 2px; }
-        #bar-fill { width: 0%; height: 100%; background: var(--accent); box-shadow: 0 0 10px var(--accent); transition: width 0.3s; }
+        .btn:hover { background: rgba(94, 252, 255, 0.1); }
+        .active-fx { background: var(--accent) !important; color: #000 !important; }
 
-        /* BIOMETRIC CARDS */
-        .data-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+        /* UI PANELS */
+        .data-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
         .data-card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 12px; text-align: center; }
-        .active { border-color: var(--accent); box-shadow: 0 0 15px rgba(94, 252, 255, 0.2); }
-        .label-tag { font-size: 10px; color: var(--accent); font-weight: bold; margin-bottom: 4px; display: block; }
-        .label-val { font-size: 16px; font-family: monospace; font-weight: 900; }
+        .label-tag { font-size: 10px; color: var(--accent); font-weight: 900; letter-spacing: 1px; }
+        .label-val { font-size: 16px; font-family: monospace; font-weight: bold; margin-top: 5px; display: block; }
 
-        /* DEBUG LOG (ENGLISH) */
         .console { 
-            background: #020617; border-radius: 8px; padding: 12px;
-            height: 130px; overflow-y: auto; font-family: 'Consolas', monospace;
-            font-size: 10px; border: 1px solid var(--border); color: #94a3b8;
+            background: #020617; border-radius: 8px; padding: 12px; height: 140px; 
+            overflow-y: auto; font-family: 'Consolas', monospace; font-size: 10px; border: 1px solid var(--border);
         }
-        .log-file { color: var(--accent); }
+        .log-path { color: var(--accent); opacity: 0.7; }
+        .log-success { color: #50fa7b; }
 
-        .copyright { font-size: 11px; color: #475569; text-align: center; margin-top: 10px; font-weight: bold; letter-spacing: 1px; }
+        .fx-controls { display: flex; gap: 10px; justify-content: center; }
 
-        /* PULSE EFFECT */
-        .pulse { animation: pulse-anim 2.5s infinite; }
-        @keyframes pulse-anim { 0%, 100% { opacity: 0.7; transform: scale(1); } 50% { opacity: 1; transform: scale(1.03); } }
+        .copyright { font-size: 11px; color: #475569; text-align: center; margin-top: 5px; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div class="main-container">
         <div class="viewport" id="wrapper">
-            <img src="IMG_0643.jpeg" class="watermark" id="watermark">
-            
+            <div class="scanlines" id="fx-lines"></div>
             <div id="overlay">
-                <img src="IMG_0643.jpeg" class="boot-logo pulse" id="main-logo">
-                <button id="start-btn" onclick="bootDarkFox()">Initialize System</button>
-                
-                <div class="loader" id="loader">
-                    <div id="load-status" style="font-size: 11px; color: var(--accent); font-weight: bold;">LOADING BIOMETRIC DATA...</div>
-                    <div class="bar-bg"><div id="bar-fill"></div></div>
+                <img src="IMG_0643.jpeg" class="boot-logo">
+                <button id="start-btn" class="btn" onclick="bootSystem()">Initialize DarkFox AI</button>
+                <div id="loader" style="display:none; text-align:center; width:220px;">
+                    <div id="status" style="font-size:10px; color:var(--accent); font-weight:bold;">SYNCING ASSETS...</div>
+                    <div style="width:100%; height:4px; background:#111; margin-top:12px; border-radius:2px; overflow:hidden;">
+                        <div id="bar" style="width:0%; height:100%; background:var(--accent); box-shadow: 0 0 10px var(--accent);"></div>
+                    </div>
                 </div>
             </div>
             <video id="video" autoplay muted playsinline></video>
         </div>
 
         <div class="data-grid">
-            <div class="data-card" id="card-g"><span class="label-tag">GENDER [G]</span><span class="label-val" id="val-g">--</span></div>
-            <div class="data-card" id="card-a"><span class="label-tag">AGE [A]</span><span class="label-val" id="val-a">--</span></div>
-            <div class="data-card" id="card-e"><span class="label-tag">EMOTION [E]</span><span class="label-val" id="val-e">--</span></div>
+            <div class="data-card"><span class="label-tag">SEX [G]</span><span id="val-g" class="label-val">--</span></div>
+            <div class="data-card"><span class="label-tag">AGE [A]</span><span id="val-a" class="label-val">--</span></div>
+            <div class="data-card"><span class="label-tag">MOOD [E]</span><span id="val-e" class="label-val">--</span></div>
         </div>
 
-        <div class="console" id="terminal">> DARKFOX OS v2026.03 - SYSTEM STANDBY...</div>
-        
+        <div class="fx-controls">
+            <button class="btn" id="btn-lines" onclick="toggleFX('lines')">Scanlines</button>
+            <button class="btn" id="btn-mesh" onclick="toggleFX('mesh')">3D Mesh</button>
+        </div>
+
+        <div class="console" id="log">> SYSTEM STANDBY. READY FOR DEPLOYMENT...</div>
         <div class="copyright">Copyright DarkFox Co. 2026</div>
     </div>
 
     <script>
         const video = document.getElementById('video');
-        const terminal = document.getElementById('terminal');
-        const barFill = document.getElementById('bar-fill');
-        const loadStatus = document.getElementById('load-status');
-        const watermark = document.getElementById('watermark');
-        
-        const vals = { g: document.getElementById('val-g'), a: document.getElementById('val-a'), e: document.getElementById('val-e') };
-        const cards = { g: document.getElementById('card-g'), a: document.getElementById('card-a'), e: document.getElementById('card-e') };
+        const terminal = document.getElementById('log');
+        let showMesh = false;
 
         const repoName = window.location.pathname.split('/')[1];
         const MODEL_URL = window.location.hostname.includes('github.io') ? `/${repoName}/weights/` : './weights/';
 
-        function log(msg, isFile = false) {
+        function log(msg, type = '') {
             const div = document.createElement('div');
-            div.innerHTML = `[${new Date().toLocaleTimeString()}] > <span class="${isFile ? 'log-file' : ''}">${msg}</span>`;
+            const time = new Date().toLocaleTimeString();
+            let content = `[${time}] > ${msg}`;
+            if(type === 'path') content = `[${time}] > <span class="log-path">LOADED ASSET FROM: ${msg}</span>`;
+            if(type === 'success') content = `[${time}] > <span class="log-success">${msg}</span>`;
+            div.innerHTML = content;
             terminal.prepend(div);
         }
 
-        async function bootDarkFox() {
-            document.getElementById('start-btn').style.display = 'none';
-            document.getElementById('loader').style.display = 'block';
-            
-            log("BOOT: Requesting data shards...");
-
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
-                video.srcObject = stream;
-
-                const models = [
-                    { n: 'Face_Detector', net: faceapi.nets.tinyFaceDetector },
-                    { n: 'Emotion_Core', net: faceapi.nets.faceExpressionNet },
-                    { n: 'Bio_Metrics', net: faceapi.nets.ageGenderNet }
-                ];
-
-                for (let i = 0; i < models.length; i++) {
-                    loadStatus.innerText = `LOADING MODULE: ${models[i].n.toUpperCase()}...`;
-                    log(`HTTP_GET: /weights/${models[i].n.toLowerCase()}_shards.json`, true);
-                    await models[i].net.loadFromUri(MODEL_URL);
-                    barFill.style.width = ((i + 1) / models.length * 100) + "%";
-                }
-
-                log("SUCCESS: Biometric link established.");
-                setTimeout(() => {
-                    document.getElementById('overlay').style.display = 'none';
-                    watermark.style.display = 'block';
-                    runEngine();
-                }, 600);
-
-            } catch (err) {
-                log("ERROR: Weights fetch failed. Check connection.");
-                loadStatus.innerText = "INITIALIZATION FAILED";
-                loadStatus.style.color = "red";
+        function toggleFX(type) {
+            if(type === 'lines') {
+                const el = document.getElementById('fx-lines');
+                const active = el.style.display === 'block';
+                el.style.display = active ? 'none' : 'block';
+                document.getElementById('btn-lines').classList.toggle('active-fx');
+            } else {
+                showMesh = !showMesh;
+                document.getElementById('btn-mesh').classList.toggle('active-fx');
             }
         }
 
-        function runEngine() {
+        async function bootSystem() {
+            document.getElementById('start-btn').style.display = 'none';
+            document.getElementById('loader').style.display = 'block';
+            
+            try {
+                log("INIT: Requesting camera permissions...");
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+                video.srcObject = stream;
+                log("IO: Camera stream linked.", "success");
+
+                const models = [
+                    {n: 'tiny_face_detector', api: 'tinyFaceDetector'},
+                    {n: 'face_landmark_68_net', api: 'faceLandmark68Net'},
+                    {n: 'face_expression_net', api: 'faceExpressionNet'},
+                    {n: 'age_gender_net', api: 'ageGenderNet'}
+                ];
+
+                for (let i = 0; i < models.length; i++) {
+                    const m = models[i];
+                    log(`${MODEL_URL}${m.n}_model-weights_manifest.json`, "path");
+                    await faceapi.nets[m.api].loadFromUri(MODEL_URL);
+                    document.getElementById('bar').style.width = ((i+1)/models.length * 100) + "%";
+                }
+
+                log("SYSTEM: All shards synchronized. Long-range mode active.", "success");
+                setTimeout(() => {
+                    document.getElementById('overlay').style.display = 'none';
+                    runAI();
+                }, 600);
+            } catch (e) { log("FATAL ERROR: " + e.message); }
+        }
+
+        function runAI() {
             const canvas = faceapi.createCanvasFromMedia(video);
             document.getElementById('wrapper').append(canvas);
             const size = { width: video.offsetWidth, height: video.offsetHeight };
             faceapi.matchDimensions(canvas, size);
 
             setInterval(async () => {
-                const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 128, scoreThreshold: 0.5 });
-                const detections = await faceapi.detectAllFaces(video, options)
-                    .withFaceExpressions().withAgeAndGender();
+                // Long-Range: InputSize 320 for distance
+                const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.4 });
+                const results = await faceapi.detectAllFaces(video, options)
+                    .withFaceLandmarks().withFaceExpressions().withAgeAndGender();
 
-                const resized = faceapi.resizeResults(detections, size);
+                const resized = faceapi.resizeResults(results, size);
                 const ctx = canvas.getContext('2d');
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
 
                 if (resized.length > 0) {
-                    const { age, gender, expressions } = resized[0];
-                    const emotion = Object.keys(expressions).reduce((a, b) => expressions[a] > expressions[b] ? a : b);
+                    const { age, gender, expressions, landmarks, detection } = resized[0];
                     
-                    vals.g.innerText = gender.toUpperCase();
-                    vals.a.innerText = Math.round(age) + " YRS";
-                    vals.e.innerText = emotion.toUpperCase();
-                    Object.values(cards).forEach(c => c.classList.add('active'));
+                    // Update UI
+                    document.getElementById('val-g').innerText = gender.toUpperCase();
+                    document.getElementById('val-a').innerText = Math.round(age) + " YRS";
+                    document.getElementById('val-e').innerText = Object.keys(expressions).reduce((a,b)=>expressions[a]>expressions[b]?a:b).toUpperCase();
 
-                    // Blue Scanner Box
-                    const { x, y, width, height } = resized[0].detection.box;
+                    // Tech-Box
+                    const box = detection.box;
                     ctx.strokeStyle = '#5efcff';
-                    ctx.lineWidth = 3;
-                    ctx.strokeRect(x, y, width, height);
-                } else {
-                    Object.values(vals).forEach(v => v.innerText = "--");
-                    Object.values(cards).forEach(c => c.classList.remove('active'));
-                    vals.g.innerText = "SCANNING";
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(box.x, box.y, box.width, box.height);
+
+                    // 3D Mesh / Points
+                    if (showMesh) {
+                        ctx.fillStyle = '#5efcff';
+                        ctx.strokeStyle = 'rgba(94, 252, 255, 0.3)';
+                        ctx.lineWidth = 0.5;
+                        
+                        // Draw connection lines for mesh look
+                        const points = landmarks.positions;
+                        // Simple mesh logic: connect neighboring points
+                        for(let i=0; i<points.length; i++) {
+                            ctx.fillRect(points[i].x, points[i].y, 2, 2);
+                            if(i > 0 && i < 17) { // Jawline
+                                ctx.beginPath(); ctx.moveTo(points[i-1].x, points[i-1].y);
+                                ctx.lineTo(points[i].x, points[i].y); ctx.stroke();
+                            }
+                        }
+                        // Draw landmarks helper
+                        faceapi.draw.drawFaceLandmarks(canvas, resized);
+                    }
                 }
-            }, 180);
+            }, 150);
         }
     </script>
 </body>
