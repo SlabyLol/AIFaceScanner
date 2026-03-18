@@ -3,7 +3,7 @@
 > STATUS: DEPLOYMENT READY
 
 [NEW FEATURES]
-- WEB3FORMS: Integrated Access Key (c387b391-5ee4-4fa0-98d6-2617c48f38f5).
+- WEB3FORMS: Integrated Access Key.
 - LIVE DEPLOY: Configured for https://slabylol.github.io/AIFaceScanner/.
 - NO-REDIRECT: Bug reports now send silently via AJAX Background-Fetch.
 
