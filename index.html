@@ -3,81 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DarkFox AI - Advanced Biometrics</title>
+    <title>DarkFox AI - Biometric Terminal</title>
     <script src="dist/face-api.min.js"></script>
     <style>
-        :root { --accent: #ff4d00; --bg: #08080a; --panel: #121216; --border: #2a2a30; --text-dim: #777; }
+        /* COLOR THEME MATCHING YOUR LOGO (CYAN/BLUE) */
+        :root { 
+            --accent: #5efcff; 
+            --bg: #04080d; 
+            --panel: #0b141d; 
+            --border: #1a2f3f; 
+            --text: #e2f8ff; 
+        }
         
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
         body { 
-            margin: 0; background: var(--bg); color: white; 
-            font-family: 'Inter', system-ui, -apple-system, sans-serif; 
+            margin: 0; background: var(--bg); color: var(--text); 
+            font-family: 'Segoe UI', Tahoma, sans-serif; 
             display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh;
         }
 
-        .main-container { width: 95vw; max-width: 720px; display: flex; flex-direction: column; gap: 15px; }
+        .main-container { width: 95vw; max-width: 720px; display: flex; flex-direction: column; gap: 12px; }
 
-        /* VIDEO AREA */
+        /* VIEWPORT (CAMERA) */
         .viewport { 
             position: relative; width: 100%; aspect-ratio: 4/3;
-            background: #000; border-radius: 8px; overflow: hidden; border: 1px solid var(--border);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            background: #000; border-radius: 12px; overflow: hidden; border: 2px solid var(--border);
+            box-shadow: 0 0 40px rgba(94, 252, 255, 0.15);
         }
         video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
         canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 5; }
 
-        /* START OVERLAY */
+        /* WATERMARK LOGO */
+        .watermark {
+            position: absolute; top: 15px; right: 15px; width: 55px; height: 55px;
+            z-index: 10; opacity: 0.6; pointer-events: none; display: none; border-radius: 50%;
+        }
+
+        /* INITIALIZATION SCREEN */
         #overlay {
-            position: absolute; inset: 0; background: rgba(8,8,10,0.95);
+            position: absolute; inset: 0; background: var(--bg);
             display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 50;
         }
+        
+        /* YOUR LOGO (IMG_0643.jpeg) */
+        .boot-logo { width: 180px; height: 180px; margin-bottom: 25px; border-radius: 50%; box-shadow: 0 0 30px var(--accent); }
+        
         #start-btn {
-            padding: 16px 45px; background: var(--accent); color: white;
-            border: none; border-radius: 4px; font-weight: 800; cursor: pointer;
-            letter-spacing: 2px; text-transform: uppercase; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 15px 45px; background: transparent; color: var(--accent);
+            border: 2px solid var(--accent); border-radius: 6px; font-weight: 800; cursor: pointer;
+            letter-spacing: 2px; text-transform: uppercase; transition: 0.3s;
         }
-        #start-btn:hover { transform: translateY(-2px); box-shadow: 0 0 20px rgba(255, 77, 0, 0.4); }
+        #start-btn:hover { background: var(--accent); color: #000; }
+        
+        .loader { display: none; width: 260px; text-align: center; }
+        .bar-bg { width: 100%; height: 4px; background: #1e293b; margin: 15px 0; overflow: hidden; border-radius: 2px; }
+        #bar-fill { width: 0%; height: 100%; background: var(--accent); box-shadow: 0 0 10px var(--accent); transition: width 0.3s; }
 
-        /* LOADER */
-        .loader { display: none; width: 280px; text-align: center; }
-        .bar-bg { width: 100%; height: 4px; background: #222; margin: 15px 0; border-radius: 10px; overflow: hidden; }
-        #bar-fill { width: 0%; height: 100%; background: var(--accent); box-shadow: 0 0 10px var(--accent); transition: width 0.4s; }
+        /* BIOMETRIC CARDS */
+        .data-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+        .data-card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 12px; text-align: center; }
+        .active { border-color: var(--accent); box-shadow: 0 0 15px rgba(94, 252, 255, 0.2); }
+        .label-tag { font-size: 10px; color: var(--accent); font-weight: bold; margin-bottom: 4px; display: block; }
+        .label-val { font-size: 16px; font-family: monospace; font-weight: 900; }
 
-        /* DATA LABELS (A. G. E.) */
-        .data-grid {
-            display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;
-        }
-        .data-card {
-            background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 12px;
-            text-align: center; transition: 0.3s;
-        }
-        .data-card.active { border-color: var(--accent); box-shadow: inset 0 0 10px rgba(255, 77, 0, 0.05); }
-        .label-tag { font-size: 10px; color: var(--accent); font-weight: 900; letter-spacing: 1px; margin-bottom: 5px; display: block; }
-        .label-val { font-size: 16px; font-family: 'JetBrains Mono', monospace; font-weight: 600; }
-
-        /* DEBUG LOG */
+        /* DEBUG LOG (ENGLISH) */
         .console { 
-            background: #000; border-radius: 6px; padding: 15px;
-            height: 160px; overflow-y: auto; font-family: 'JetBrains Mono', 'Consolas', monospace;
-            font-size: 11px; border: 1px solid var(--border); color: #00ff41;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+            background: #020617; border-radius: 8px; padding: 12px;
+            height: 130px; overflow-y: auto; font-family: 'Consolas', monospace;
+            font-size: 10px; border: 1px solid var(--border); color: #94a3b8;
         }
-        .log-row { margin-bottom: 4px; opacity: 0.8; }
-        .log-file { color: #00a2ff; font-weight: bold; }
+        .log-file { color: var(--accent); }
 
-        /* FOOTER */
-        .copyright { font-size: 10px; color: var(--text-dim); text-align: center; margin-top: 5px; opacity: 0.6; }
+        .copyright { font-size: 11px; color: #475569; text-align: center; margin-top: 10px; font-weight: bold; letter-spacing: 1px; }
+
+        /* PULSE EFFECT */
+        .pulse { animation: pulse-anim 2.5s infinite; }
+        @keyframes pulse-anim { 0%, 100% { opacity: 0.7; transform: scale(1); } 50% { opacity: 1; transform: scale(1.03); } }
     </style>
 </head>
 <body>
 
     <div class="main-container">
         <div class="viewport" id="wrapper">
+            <img src="IMG_0643.jpeg" class="watermark" id="watermark">
+            
             <div id="overlay">
-                <button id="start-btn" onclick="bootDarkFox()">Initialize DarkFox AI</button>
+                <img src="IMG_0643.jpeg" class="boot-logo pulse" id="main-logo">
+                <button id="start-btn" onclick="bootDarkFox()">Initialize System</button>
+                
                 <div class="loader" id="loader">
-                    <div id="load-status" style="font-size: 11px; font-weight: bold; color: var(--accent);">PREPARING SHARDS...</div>
+                    <div id="load-status" style="font-size: 11px; color: var(--accent); font-weight: bold;">LOADING BIOMETRIC DATA...</div>
                     <div class="bar-bg"><div id="bar-fill"></div></div>
                 </div>
             </div>
@@ -85,24 +101,13 @@
         </div>
 
         <div class="data-grid">
-            <div class="data-card" id="card-g">
-                <span class="label-tag">GENDER [G]</span>
-                <span class="label-val" id="val-g">WAITING</span>
-            </div>
-            <div class="data-card" id="card-a">
-                <span class="label-tag">AGE [A]</span>
-                <span class="label-val" id="val-a">--</span>
-            </div>
-            <div class="data-card" id="card-e">
-                <span class="label-tag">EMOTION [E]</span>
-                <span class="label-val" id="val-e">--</span>
-            </div>
+            <div class="data-card" id="card-g"><span class="label-tag">GENDER [G]</span><span class="label-val" id="val-g">--</span></div>
+            <div class="data-card" id="card-a"><span class="label-tag">AGE [A]</span><span class="label-val" id="val-a">--</span></div>
+            <div class="data-card" id="card-e"><span class="label-tag">EMOTION [E]</span><span class="label-val" id="val-e">--</span></div>
         </div>
 
-        <div class="console" id="terminal">
-            <div class="log-row">> DARKFOX CORE v4.0.26 READY.</div>
-        </div>
-
+        <div class="console" id="terminal">> DARKFOX OS v2026.03 - SYSTEM STANDBY...</div>
+        
         <div class="copyright">Copyright DarkFox Co. 2026</div>
     </div>
 
@@ -111,59 +116,54 @@
         const terminal = document.getElementById('terminal');
         const barFill = document.getElementById('bar-fill');
         const loadStatus = document.getElementById('load-status');
+        const watermark = document.getElementById('watermark');
         
-        const cards = { g: document.getElementById('card-g'), a: document.getElementById('card-a'), e: document.getElementById('card-e') };
         const vals = { g: document.getElementById('val-g'), a: document.getElementById('val-a'), e: document.getElementById('val-e') };
+        const cards = { g: document.getElementById('card-g'), a: document.getElementById('card-a'), e: document.getElementById('card-e') };
 
         const repoName = window.location.pathname.split('/')[1];
         const MODEL_URL = window.location.hostname.includes('github.io') ? `/${repoName}/weights/` : './weights/';
 
         function log(msg, isFile = false) {
             const div = document.createElement('div');
-            div.className = 'log-row';
-            const timestamp = new Date().toLocaleTimeString();
-            div.innerHTML = `[${timestamp}] <span class="${isFile ? 'log-file' : ''}">${msg}</span>`;
-            terminal.appendChild(div);
-            terminal.scrollTop = terminal.scrollHeight;
+            div.innerHTML = `[${new Date().toLocaleTimeString()}] > <span class="${isFile ? 'log-file' : ''}">${msg}</span>`;
+            terminal.prepend(div);
         }
 
         async function bootDarkFox() {
             document.getElementById('start-btn').style.display = 'none';
             document.getElementById('loader').style.display = 'block';
             
-            log("BOOT: Initiating biometric sequence...");
+            log("BOOT: Requesting data shards...");
 
             try {
-                log("IO: Binding Camera Hardware...");
                 const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
                 video.srcObject = stream;
 
                 const models = [
-                    { id: 'TINY_DETECTOR', net: faceapi.nets.tinyFaceDetector },
-                    { id: 'EXPRESSION_CORE', net: faceapi.nets.faceExpressionNet },
-                    { id: 'AGE_GENDER_NET', net: faceapi.nets.ageGenderNet }
+                    { n: 'Face_Detector', net: faceapi.nets.tinyFaceDetector },
+                    { n: 'Emotion_Core', net: faceapi.nets.faceExpressionNet },
+                    { n: 'Bio_Metrics', net: faceapi.nets.ageGenderNet }
                 ];
 
                 for (let i = 0; i < models.length; i++) {
-                    const m = models[i];
-                    loadStatus.innerText = `FETCHING ${m.id}...`;
-                    log(`GET: /weights/${m.id.toLowerCase()}.weights_manifest.json`, true);
-                    
-                    await m.net.loadFromUri(MODEL_URL);
-                    
-                    log(`SUCCESS: ${m.id} shards extracted and verified.`, true);
+                    loadStatus.innerText = `LOADING MODULE: ${models[i].n.toUpperCase()}...`;
+                    log(`HTTP_GET: /weights/${models[i].n.toLowerCase()}_shards.json`, true);
+                    await models[i].net.loadFromUri(MODEL_URL);
                     barFill.style.width = ((i + 1) / models.length * 100) + "%";
                 }
 
-                log("SYSTEM: Neural architecture synchronized.");
+                log("SUCCESS: Biometric link established.");
                 setTimeout(() => {
                     document.getElementById('overlay').style.display = 'none';
+                    watermark.style.display = 'block';
                     runEngine();
                 }, 600);
 
             } catch (err) {
-                log("CRITICAL ERROR: Connection to Weights-Repo failed.");
-                loadStatus.innerText = "LINK FAILED";
+                log("ERROR: Weights fetch failed. Check connection.");
+                loadStatus.innerText = "INITIALIZATION FAILED";
+                loadStatus.style.color = "red";
             }
         }
 
@@ -171,45 +171,37 @@
             const canvas = faceapi.createCanvasFromMedia(video);
             document.getElementById('wrapper').append(canvas);
             const size = { width: video.offsetWidth, height: video.offsetHeight };
-            faceapi.matchDimensions(canvas, displaySize = size);
+            faceapi.matchDimensions(canvas, size);
 
             setInterval(async () => {
-                const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 128 }))
-                    .withFaceExpressions()
-                    .withAgeAndGender();
+                const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 128, scoreThreshold: 0.5 });
+                const detections = await faceapi.detectAllFaces(video, options)
+                    .withFaceExpressions().withAgeAndGender();
 
                 const resized = faceapi.resizeResults(detections, size);
                 const ctx = canvas.getContext('2d');
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
 
                 if (resized.length > 0) {
-                    const { detection, age, gender, expressions } = resized[0];
+                    const { age, gender, expressions } = resized[0];
                     const emotion = Object.keys(expressions).reduce((a, b) => expressions[a] > expressions[b] ? a : b);
                     
-                    // UI UPDATES
                     vals.g.innerText = gender.toUpperCase();
-                    vals.a.innerText = Math.round(age);
+                    vals.a.innerText = Math.round(age) + " YRS";
                     vals.e.innerText = emotion.toUpperCase();
                     Object.values(cards).forEach(c => c.classList.add('active'));
 
-                    // CUSTOM DRAWING: Brackets instead of simple box
-                    const { x, y, width, height } = detection.box;
-                    ctx.strokeStyle = '#ff4d00';
+                    // Blue Scanner Box
+                    const { x, y, width, height } = resized[0].detection.box;
+                    ctx.strokeStyle = '#5efcff';
                     ctx.lineWidth = 3;
-                    
-                    // Zeichne nur die Ecken für High-Tech Look
-                    const len = 20;
-                    ctx.beginPath();
-                    ctx.moveTo(x, y + len); ctx.lineTo(x, y); ctx.lineTo(x + len, y); // Top-Left
-                    ctx.moveTo(x + width - len, y); ctx.lineTo(x + width, y); ctx.lineTo(x + width, y + len); // Top-Right
-                    ctx.stroke();
-
+                    ctx.strokeRect(x, y, width, height);
                 } else {
                     Object.values(vals).forEach(v => v.innerText = "--");
                     Object.values(cards).forEach(c => c.classList.remove('active'));
                     vals.g.innerText = "SCANNING";
                 }
-            }, 200);
+            }, 180);
         }
     </script>
 </body>
