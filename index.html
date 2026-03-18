@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DarkFox AI - Multi-Target Terminal</title>
+    <title>DarkFox AI - Absolute Terminal</title>
     <script src="dist/face-api.min.js"></script>
     <style>
         :root { --accent: #5efcff; --bg: #04080d; --panel: #0b141d; --border: #1a2f3f; --text: #e2f8ff; --warning: #ff4d00; }
@@ -11,7 +11,7 @@
         body { 
             margin: 0; background: var(--bg); color: var(--text); 
             font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; 
-            align-items: center; justify-content: center; min-height: 100vh;
+            align-items: center; justify-content: center; min-height: 100vh; overflow-x: hidden;
         }
 
         .main-container { width: 95vw; max-width: 720px; display: flex; flex-direction: column; gap: 10px; }
@@ -25,7 +25,7 @@
         video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
         canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 5; pointer-events: none; }
 
-        /* STATUS BADGES */
+        /* BADGES */
         .badge {
             position: absolute; z-index: 20; background: rgba(0,0,0,0.85); 
             padding: 6px 14px; border-radius: 4px; font-size: 11px; 
@@ -63,6 +63,10 @@
             border: 1px solid var(--border); color: #888;
         }
         .log-load { color: var(--accent); }
+        .log-error { color: #ff4d4d; }
+
+        #bar-container { width: 220px; height: 4px; background: #111; margin-top: 15px; border-radius: 2px; overflow: hidden; }
+        #bar { width: 0%; height: 100%; background: var(--accent); box-shadow: 0 0 10px var(--accent); transition: width 0.3s; }
 
         .copyright { font-size: 10px; color: #334155; text-align: center; margin-top: 5px; font-weight: bold; }
         input[type="file"] { display: none; }
@@ -72,20 +76,20 @@
 
     <div class="main-container">
         <div class="viewport" id="wrapper">
-            <div class="badge" id="mode-display">SYSTEM: IDLE</div>
+            <div class="badge" id="mode-display">SYSTEM: STANDBY</div>
             <div class="badge" id="target-count">TARGETS: 0</div>
             
             <div id="overlay">
                 <img src="IMG_0643.jpeg" class="boot-logo">
-                <div style="display:flex; gap:10px;">
+                <div id="ui-actions" style="display:flex; gap:10px;">
                     <button class="btn" onclick="bootSystem('camera')">Live Mode</button>
                     <label class="btn" for="video-upload">Import Video</label>
                 </div>
                 <input type="file" id="video-upload" accept="video/*" onchange="bootSystem('import')">
                 
-                <div id="loader" style="display:none; text-align:center; width:220px; margin-top:20px;">
-                    <div id="status" style="font-size:10px; color:var(--accent);">SYNCING NEURAL ASSETS...</div>
-                    <div style="width:100%; height:3px; background:#111; margin-top:8px;"><div id="bar" style="width:0%; height:100%; background:var(--accent);"></div></div>
+                <div id="loader" style="display:none; text-align:center;">
+                    <div id="status" style="font-size:10px; color:var(--accent); font-weight:bold;">SYNCING NEURAL LAYERS...</div>
+                    <div id="bar-container"><div id="bar"></div></div>
                 </div>
             </div>
             <video id="video" autoplay muted playsinline loop></video>
@@ -104,7 +108,7 @@
             <button class="btn" onclick="setSpeed(2.0)">2.0x</button>
         </div>
 
-        <div class="console" id="log">> STANDBY. SELECT MISSION SOURCE...</div>
+        <div class="console" id="log">> AWAITING MISSION PARAMETERS...</div>
         <div class="copyright">Copyright DarkFox Co. 2026</div>
     </div>
 
@@ -114,28 +118,42 @@
         let showMesh = false;
         let aiActive = false;
 
-        const repoName = window.location.pathname.split('/')[1];
-        const MODEL_URL = window.location.hostname.includes('github.io') ? `/${repoName}/weights/` : './weights/';
+        const isGitHub = window.location.hostname.includes('github.io');
+        const MODEL_URL = isGitHub ? `/${window.location.pathname.split('/')[1]}/weights/` : './weights/';
 
-        function log(msg, asset = false) {
+        function log(msg, type = '') {
             const div = document.createElement('div');
             const time = new Date().toLocaleTimeString();
-            div.innerHTML = `[${time}] > ${asset ? '<span class="log-load">LOADED ASSET FROM: ' + msg + '</span>' : msg}`;
+            let style = '';
+            if(type === 'load') style = 'class="log-load"';
+            if(type === 'error') style = 'class="log-error"';
+            div.innerHTML = `[${time}] > <span ${style}>${msg}</span>`;
             terminal.prepend(div);
         }
 
-        function setSpeed(s) { video.playbackRate = s; log(`SYSTEM: Playback set to ${s}x`); }
+        function setSpeed(s) { video.playbackRate = s; log(`SYSTEM: Playback speed adjusted to ${s}x`); }
         function toggleMesh() { showMesh = !showMesh; document.getElementById('mesh-btn').classList.toggle('active-fx'); }
 
         async function bootSystem(mode) {
+            document.getElementById('ui-actions').style.display = 'none';
             document.getElementById('loader').style.display = 'block';
             
+            const models = [
+                { id: 'tinyFaceDetector', label: 'Face Detector' },
+                { id: 'faceLandmark68Net', label: '3D Landmarks' },
+                { id: 'faceExpressionNet', label: 'Emotion Core' },
+                { id: 'ageGenderNet', label: 'Biometrics' }
+            ];
+
             try {
-                const models = ['tiny_face_detector', 'face_landmark_68_net', 'face_expression_net', 'age_gender_net'];
                 for (let i = 0; i < models.length; i++) {
-                    const path = `${MODEL_URL}${models[i]}_model-weights_manifest.json`;
-                    log(path, true);
-                    await faceapi.nets[models[i].replace(/_([a-z0-9])/g, (g) => g[1].toUpperCase())].loadFromUri(MODEL_URL);
+                    const m = models[i];
+                    document.getElementById('status').innerText = `LOADING ${m.label.toUpperCase()}...`;
+                    const path = `${MODEL_URL}${m.id}_model-weights_manifest.json`;
+                    log(`LOADED ASSET FROM: ${path}`, 'load');
+                    
+                    await faceapi.nets[m.id].loadFromUri(MODEL_URL);
+                    
                     document.getElementById('bar').style.width = ((i+1)/models.length * 100) + "%";
                 }
 
@@ -143,18 +161,21 @@
                     const stream = await navigator.mediaDevices.getUserMedia({ video: true });
                     video.srcObject = stream;
                     document.getElementById('mode-display').innerText = "SYSTEM: LIVE FEED";
-                    log("LIVE: Multi-Target camera active.");
                 } else {
                     const file = document.getElementById('video-upload').files[0];
                     video.src = URL.createObjectURL(file);
-                    document.getElementById('mode-display').innerText = "SYSTEM: VIDEO ANALYSIS";
-                    log(`IMPORT: Loaded ${file.name}. Running shards.`);
+                    document.getElementById('mode-display').innerText = "SYSTEM: VIDEO ANALYST";
+                    log(`IMPORT: Analyzing ${file.name}...`);
                 }
 
                 document.getElementById('overlay').style.display = 'none';
                 if(!aiActive) runAI();
                 aiActive = true;
-            } catch (e) { log("FATAL: " + e.message); }
+            } catch (e) {
+                log(`FATAL ERROR: ${e.message}`, 'error');
+                document.getElementById('status').innerText = "BOOT FAILED";
+                document.getElementById('status').style.color = "red";
+            }
         }
 
         function runAI() {
@@ -167,7 +188,6 @@
                 const size = { width: video.offsetWidth, height: video.offsetHeight };
                 faceapi.matchDimensions(canvas, size);
 
-                // Long-Range Multi-Detection
                 const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.4 });
                 const detections = await faceapi.detectAllFaces(video, options)
                     .withFaceLandmarks().withFaceExpressions().withAgeAndGender();
@@ -176,37 +196,27 @@
                 const ctx = canvas.getContext('2d');
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                // Update Target Counter for BOTH modes
                 document.getElementById('target-count').innerText = `TARGETS: ${resized.length}`;
 
                 if (resized.length > 0) {
-                    // Update Primary Target Data (the first person detected)
+                    // Primary Data
                     const primary = resized[0];
                     document.getElementById('val-g').innerText = primary.gender.toUpperCase();
                     document.getElementById('val-a').innerText = Math.round(primary.age) + " YRS";
                     document.getElementById('val-e').innerText = Object.keys(primary.expressions).reduce((a,b)=>primary.expressions[a]>primary.expressions[b]?a:b).toUpperCase();
 
-                    // Draw Mesh and Boxes for ALL detected persons
-                    resized.forEach(result => {
-                        const { detection, landmarks } = result;
-                        
-                        // Tech-Box
+                    // Draw for all
+                    resized.forEach(res => {
                         ctx.strokeStyle = '#5efcff';
                         ctx.lineWidth = 2;
-                        ctx.strokeRect(detection.box.x, detection.box.y, detection.box.width, detection.box.height);
-
-                        // 3D Mesh (if enabled)
+                        ctx.strokeRect(res.detection.box.x, res.detection.box.y, res.detection.box.width, res.detection.box.height);
+                        
                         if(showMesh) {
                             ctx.fillStyle = '#5efcff';
                             ctx.strokeStyle = 'rgba(94, 252, 255, 0.4)';
-                            ctx.lineWidth = 0.5;
-                            faceapi.draw.drawFaceLandmarks(canvas, result);
+                            faceapi.draw.drawFaceLandmarks(canvas, res);
                         }
                     });
-                } else {
-                    document.getElementById('val-g').innerText = "--";
-                    document.getElementById('val-a').innerText = "--";
-                    document.getElementById('val-e').innerText = "--";
                 }
             }, 100);
         }
