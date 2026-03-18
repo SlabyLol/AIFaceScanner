@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DarkFox AI - Terminal v5.0</title>
+    <title>DarkFox AI - Terminal v5.6</title>
     <script src="dist/face-api.min.js"></script>
     <style>
         :root { 
@@ -16,10 +16,7 @@
             display: flex; flex-direction: column; align-items: center; justify-content: center; 
             min-height: 100vh; overflow: hidden; 
         }
-        
         .main-container { width: 95vw; max-width: 720px; display: flex; flex-direction: column; gap: 10px; z-index: 5; }
-
-        /* VIEWPORT SYSTEM */
         .viewport { 
             position: relative; width: 100%; aspect-ratio: 4/3;
             background: #000; border-radius: 12px; overflow: hidden; border: 2px solid var(--border);
@@ -27,85 +24,31 @@
         }
         video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
         canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; transform: scaleX(-1); }
-
-        .badge {
-            position: absolute; z-index: 20; background: rgba(0,0,0,0.85); 
-            padding: 6px 14px; border-radius: 4px; font-size: 11px; 
-            border: 1px solid var(--accent); color: var(--accent); font-weight: 900;
-        }
+        .badge { position: absolute; z-index: 20; background: rgba(0,0,0,0.85); padding: 6px 14px; border-radius: 4px; font-size: 11px; border: 1px solid var(--accent); color: var(--accent); font-weight: 900; }
         #mode-display { top: 12px; left: 12px; }
         #target-count { top: 12px; right: 12px; color: var(--warning); border-color: var(--warning); }
-
-        /* BOOT INTERFACE */
-        #boot-screen {
-            position: absolute; inset: 0; background: var(--bg);
-            display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100;
-            transition: opacity 0.8s;
-        }
+        #boot-screen { position: absolute; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; transition: opacity 0.8s; }
         .boot-logo { width: 130px; height: 130px; border-radius: 50%; box-shadow: 0 0 30px var(--accent); margin-bottom: 25px; }
-        
-        .btn-main {
-            padding: 12px 24px; background: transparent; color: var(--accent);
-            border: 1px solid var(--accent); border-radius: 4px; font-weight: 800; cursor: pointer;
-            text-transform: uppercase; letter-spacing: 2px; font-size: 11px; transition: 0.3s;
-        }
+        .btn-main { padding: 12px 24px; background: transparent; color: var(--accent); border: 1px solid var(--accent); border-radius: 4px; font-weight: 800; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; font-size: 11px; transition: 0.3s; }
         .btn-main:hover { background: var(--accent); color: #000; box-shadow: 0 0 20px var(--accent); }
-
-        /* CONTROL PANEL */
-        .controls-container {
-            position: fixed; bottom: 20px; right: 20px; z-index: 200;
-            display: flex; flex-direction: column; gap: 8px;
-        }
-        .ctrl-btn {
-            background: rgba(0,0,0,0.85); padding: 10px 15px; border-radius: 4px; 
-            font-size: 10px; font-weight: bold; cursor: pointer; 
-            text-transform: uppercase; letter-spacing: 1px; transition: 0.2s;
-            min-width: 140px; text-align: left;
-        }
+        .controls-container { position: fixed; bottom: 20px; right: 20px; z-index: 200; display: flex; flex-direction: column; gap: 8px; }
+        .ctrl-btn { background: rgba(0,0,0,0.85); padding: 10px 15px; border-radius: 4px; font-size: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: 0.2s; min-width: 140px; text-align: left; }
         #btn-bug { color: var(--bug-btn); border: 1px solid var(--bug-btn); }
         #btn-mesh { color: var(--mesh-btn); border: 1px solid var(--mesh-btn); }
         #btn-mesh.active { background: var(--mesh-btn); color: #000; box-shadow: 0 0 15px var(--mesh-btn); }
         #btn-log { color: var(--log-btn); border: 1px solid var(--log-btn); }
-
-        /* MODAL SYSTEM */
-        .modal {
-            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95);
-            z-index: 300; align-items: center; justify-content: center; padding: 20px;
-        }
-        .modal-content {
-            background: var(--panel); border: 1px solid var(--border); width: 100%; max-width: 500px;
-            padding: 25px; border-radius: 12px; position: relative;
-        }
-        .modal-header { font-weight: bold; margin-bottom: 15px; text-transform: uppercase; font-size: 13px; }
-        
-        /* SCROLLABLE LOG AREA */
-        #log-body { 
-            font-size: 11px; color: #8899aa; white-space: pre-wrap; 
-            max-height: 300px; overflow-y: auto; user-select: all;
-            padding-right: 12px; line-height: 1.6;
-        }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 300; align-items: center; justify-content: center; padding: 20px; }
+        .modal-content { background: var(--panel); border: 1px solid var(--border); width: 100%; max-width: 500px; padding: 25px; border-radius: 12px; position: relative; }
+        #log-body { font-size: 11px; color: #8899aa; white-space: pre-wrap; max-height: 300px; overflow-y: auto; user-select: all; padding-right: 12px; }
         #log-body::-webkit-scrollbar { width: 4px; }
         #log-body::-webkit-scrollbar-thumb { background: var(--log-btn); border-radius: 10px; }
-
-        /* FORM STYLES */
-        .bug-input {
-            width: 100%; background: #010409; border: 1px solid var(--border); color: #fff;
-            padding: 10px; margin-bottom: 10px; font-family: monospace; font-size: 12px; outline: none;
-        }
-        .bug-input:focus { border-color: var(--bug-btn); }
-
+        .bug-input { width: 100%; background: #010409; border: 1px solid var(--border); color: #fff; padding: 10px; margin-bottom: 10px; font-family: monospace; font-size: 12px; outline: none; }
         .close-x { position: absolute; top: 15px; right: 15px; color: #445566; cursor: pointer; font-size: 22px; }
-
-        /* DATA CARDS */
         .data-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
         .data-card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 12px; text-align: center; }
         .tag { font-size: 9px; color: var(--accent); font-weight: bold; }
         .val { font-size: 15px; font-weight: 900; display: block; margin-top: 4px; }
-
-        .terminal { 
-            background: #010409; border-radius: 8px; padding: 10px; height: 100px; 
-            overflow-y: auto; font-size: 10px; color: #445566; border: 1px solid var(--border);
-        }
+        .terminal { background: #010409; border-radius: 8px; padding: 10px; height: 100px; overflow-y: auto; font-size: 10px; color: #445566; border: 1px solid var(--border); }
     </style>
 </head>
 <body>
@@ -119,12 +62,13 @@
     <div id="modal-bug" class="modal">
         <div class="modal-content" style="border-color: var(--bug-btn);">
             <span class="close-x" onclick="toggleModal('modal-bug', false)">&times;</span>
-            <div class="modal-header" style="color: var(--bug-btn);">Bug Reporting Tool</div>
-            <form id="bug-form" action="https://formspree.io/f/darkfox.tobias@outlook.com" method="POST">
+            <div style="color:var(--bug-btn); font-weight:bold; margin-bottom:15px;">BUG REPORT SYSTEM</div>
+            <form id="bug-form">
+                <input type="hidden" name="access_key" value="c387b391-5ee4-4fa0-98d6-2617c48f38f5">
                 <input type="text" name="name" class="bug-input" placeholder="User Name" required>
                 <input type="email" id="bug-email" name="email" class="bug-input" placeholder="Contact Email" required>
-                <input type="text" name="subject" class="bug-input" placeholder="Bug Subject" required>
-                <textarea name="message" class="bug-input" style="height: 80px; resize: none;" placeholder="Provide details..." required></textarea>
+                <input type="text" name="subject" class="bug-input" placeholder="Subject" required>
+                <textarea name="message" class="bug-input" style="height: 80px; resize: none;" placeholder="Details..." required></textarea>
                 <button type="submit" class="btn-main" style="width: 100%; border-color: var(--bug-btn); color: var(--bug-btn);">Transmit Report</button>
             </form>
         </div>
@@ -133,8 +77,7 @@
     <div id="modal-log" class="modal">
         <div class="modal-content" style="border-color: var(--log-btn);">
             <span class="close-x" onclick="toggleModal('modal-log', false)">&times;</span>
-            <div class="modal-header" style="color: var(--log-btn);">External Update History</div>
-            <div id="log-body">Syncing with repository...</div>
+            <div id="log-body">Loading...</div>
         </div>
     </div>
 
@@ -142,22 +85,18 @@
         <div class="viewport" id="cam-wrapper">
             <div class="badge" id="mode-display">ENGINE: STANDBY</div>
             <div class="badge" id="target-count">TARGETS: 0</div>
-            
             <div id="boot-screen">
-                <img src="IMG_0643.jpeg" class="boot-logo" alt="Logo">
-                <button class="btn-main" id="init-btn" onclick="startEngine()">Initialize System</button>
+                <img src="IMG_0643.jpeg" class="boot-logo">
+                <button class="btn-main" onclick="startEngine()">Initialize System</button>
             </div>
-            
             <video id="video-feed" autoplay muted playsinline></video>
         </div>
-
         <div class="data-grid">
             <div class="data-card"><span class="tag">GENDER</span><span id="out-gender" class="val">--</span></div>
             <div class="data-card"><span class="tag">EST. AGE</span><span id="out-age" class="val">--</span></div>
             <div class="data-card"><span class="tag">EMOTION</span><span id="out-emotion" class="val">--</span></div>
         </div>
-
-        <div class="terminal" id="term-out">> CONNECTED. AWAITING INITIALIZATION SEQUENCE.</div>
+        <div class="terminal" id="term-out">> SYSTEM READY.</div>
     </div>
 
     <script>
@@ -171,18 +110,14 @@
             term.prepend(div);
         }
 
-        // NAVIGATION LOGIC
-        function toggleModal(id, show) {
-            document.getElementById(id).style.display = show ? 'flex' : 'none';
-        }
+        function toggleModal(id, show) { document.getElementById(id).style.display = show ? 'flex' : 'none'; }
 
         async function loadLogFile() {
             toggleModal('modal-log', true);
             try {
                 const res = await fetch('update-log.txt');
-                const content = res.ok ? await res.text() : "ERROR: update-log.txt not found in root.";
-                document.getElementById('log-body').innerText = content;
-            } catch (e) { document.getElementById('log-body').innerText = "CONNECTION FAILED."; }
+                document.getElementById('log-body').innerText = res.ok ? await res.text() : "Log not found.";
+            } catch (e) { document.getElementById('log-body').innerText = "Fetch error."; }
         }
 
         function toggleMesh() {
@@ -190,26 +125,35 @@
             const b = document.getElementById('btn-mesh');
             b.innerText = meshEnabled ? "3D Mesh ON" : "3D Mesh OFF";
             b.classList.toggle('active');
-            printTerm(`ENGINE: Mesh overlay ${meshEnabled ? 'activated' : 'deactivated'}.`);
+            printTerm(`ENGINE: Mesh overlay ${meshEnabled ? 'ON' : 'OFF'}`);
         }
 
-        // FORM VALIDATION
-        document.getElementById('bug-form').addEventListener('submit', function(e) {
-            const email = document.getElementById('bug-email').value;
-            const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-            if(!valid) {
-                e.preventDefault();
-                alert("CRITICAL: Invalid email format.");
-            } else {
-                printTerm("BUG-REPORT: Dispatching to darkfox.tobias@outlook.com...");
-            }
+        // WEB3FORMS AJAX HANDLER
+        document.getElementById('bug-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            btn.innerText = "TRANSMITTING...";
+            btn.disabled = true;
+
+            const formData = new FormData(e.target);
+            const json = JSON.stringify(Object.fromEntries(formData));
+
+            try {
+                const res = await fetch('https://api.web3forms.com/submit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: json
+                });
+                if (res.ok) {
+                    printTerm("SUCCESS: Report sent to darkfox.tobias@outlook.com");
+                    e.target.reset();
+                    setTimeout(() => { toggleModal('modal-bug', false); btn.innerText = "Transmit Report"; btn.disabled = false; }, 2000);
+                }
+            } catch (err) { printTerm("FATAL: Transmission failed."); btn.disabled = false; }
         });
 
-        // AI CORE
         async function startEngine() {
-            document.getElementById('init-btn').innerText = "BOOTING...";
-            printTerm("CORE: Loading neural network modules...");
-
+            printTerm("CORE: Loading weights...");
             try {
                 const PATH = './weights/';
                 await Promise.all([
@@ -218,54 +162,36 @@
                     faceapi.nets.faceExpressionNet.loadFromUri(PATH),
                     faceapi.nets.ageGenderNet.loadFromUri(PATH)
                 ]);
-
                 const stream = await navigator.mediaDevices.getUserMedia({ video: true });
                 video.srcObject = stream;
-
                 video.onloadedmetadata = () => {
                     document.getElementById('boot-screen').style.opacity = '0';
                     setTimeout(() => document.getElementById('boot-screen').remove(), 800);
-                    document.getElementById('mode-display').innerText = "ENGINE: LIVE ANALYSIS";
                     runProcessing();
                 };
-            } catch(e) { printTerm("FATAL ERROR: " + e.message); }
+            } catch(e) { printTerm("ERROR: " + e.message); }
         }
 
         async function runProcessing() {
             canvas = faceapi.createCanvasFromMedia(video);
             document.getElementById('cam-wrapper').append(canvas);
             ctx = canvas.getContext('2d');
-
             const loop = async () => {
                 const dims = { width: video.offsetWidth, height: video.offsetHeight };
                 if (canvas.width !== dims.width) faceapi.matchDimensions(canvas, dims);
-
                 const data = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.4 }))
                     .withFaceLandmarks().withFaceExpressions().withAgeAndGender();
-
                 const scaled = faceapi.resizeResults(data, dims);
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
-                document.getElementById('target-count').innerText = `TARGETS: ${scaled.length}`;
-
                 if(scaled.length > 0) {
                     const top = scaled[0];
                     document.getElementById('out-gender').innerText = top.gender.toUpperCase();
                     document.getElementById('out-age').innerText = Math.round(top.age) + " YRS";
                     document.getElementById('out-emotion').innerText = Object.keys(top.expressions).reduce((a,b)=>top.expressions[a]>top.expressions[b]?a:b).toUpperCase();
-
                     scaled.forEach((item, i) => {
-                        ctx.strokeStyle = '#5efcff';
-                        ctx.lineWidth = 2;
+                        ctx.strokeStyle = '#5efcff'; ctx.lineWidth = 2;
                         ctx.strokeRect(item.detection.box.x, item.detection.box.y, item.detection.box.width, item.detection.box.height);
-                        
                         if(meshEnabled) faceapi.draw.drawFaceLandmarks(canvas, item);
-                        
-                        ctx.save();
-                        ctx.scale(-1, 1);
-                        ctx.fillStyle = '#5efcff';
-                        ctx.font = 'bold 12px monospace';
-                        ctx.fillText(`ID#00${i+1}`, -(item.detection.box.x + 5), item.detection.box.y - 8);
-                        ctx.restore();
                     });
                 }
                 requestAnimationFrame(loop);
