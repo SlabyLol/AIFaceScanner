@@ -16,7 +16,6 @@
 
         .main-container { width: 95vw; max-width: 720px; display: flex; flex-direction: column; gap: 10px; }
 
-        /* VIEWPORT */
         .viewport { 
             position: relative; width: 100%; aspect-ratio: 4/3;
             background: #000; border-radius: 12px; overflow: hidden; border: 2px solid var(--border);
@@ -25,7 +24,6 @@
         video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
         canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 5; pointer-events: none; }
 
-        /* BADGES */
         .badge {
             position: absolute; z-index: 20; background: rgba(0,0,0,0.85); 
             padding: 6px 14px; border-radius: 4px; font-size: 11px; 
@@ -34,7 +32,6 @@
         #mode-display { top: 15px; left: 15px; }
         #target-count { top: 15px; right: 15px; color: var(--warning); border-color: var(--warning); }
 
-        /* BOOT SCREEN */
         #overlay {
             position: absolute; inset: 0; background: var(--bg);
             display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 50;
@@ -49,7 +46,6 @@
         .btn:hover { background: var(--accent); color: #000; }
         .active-fx { background: var(--accent) !important; color: #000 !important; }
 
-        /* UI ELEMENTS */
         .data-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
         .data-card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 12px; text-align: center; }
         .label-tag { font-size: 9px; color: var(--accent); font-weight: bold; opacity: 0.8; }
@@ -66,7 +62,7 @@
         .log-error { color: #ff4d4d; }
 
         #bar-container { width: 220px; height: 4px; background: #111; margin-top: 15px; border-radius: 2px; overflow: hidden; }
-        #bar { width: 0%; height: 100%; background: var(--accent); box-shadow: 0 0 10px var(--accent); transition: width 0.3s; }
+        #bar { width: 0%; height: 100%; background: var(--accent); transition: width 0.3s; }
 
         .copyright { font-size: 10px; color: #334155; text-align: center; margin-top: 5px; font-weight: bold; }
         input[type="file"] { display: none; }
@@ -83,16 +79,16 @@
                 <img src="IMG_0643.jpeg" class="boot-logo">
                 <div id="ui-actions" style="display:flex; gap:10px;">
                     <button class="btn" onclick="bootSystem('camera')">Live Mode</button>
-                    <label class="btn" for="video-upload">Import Video</label>
+                    <label class="btn" for="video-upload">Import mp4/mov</label>
                 </div>
                 <input type="file" id="video-upload" accept="video/*" onchange="bootSystem('import')">
                 
                 <div id="loader" style="display:none; text-align:center;">
-                    <div id="status" style="font-size:10px; color:var(--accent); font-weight:bold;">SYNCING NEURAL LAYERS...</div>
+                    <div id="status" style="font-size:10px; color:var(--accent); font-weight:bold;">INITIALIZING NEURAL NETWORK...</div>
                     <div id="bar-container"><div id="bar"></div></div>
                 </div>
             </div>
-            <video id="video" autoplay muted playsinline loop></video>
+            <video id="video" muted playsinline loop></video>
         </div>
 
         <div class="data-grid">
@@ -102,7 +98,7 @@
         </div>
 
         <div class="controls-row">
-            <button class="btn" onclick="toggleMesh()" id="mesh-btn">3D Mesh</button>
+            <button class="btn" onclick="toggleMesh()" id="mesh-btn">3D Mesh View</button>
             <button class="btn" onclick="setSpeed(0.5)">0.5x</button>
             <button class="btn" onclick="setSpeed(1.0)">1.0x</button>
             <button class="btn" onclick="setSpeed(2.0)">2.0x</button>
@@ -117,6 +113,7 @@
         const terminal = document.getElementById('log');
         let showMesh = false;
         let aiActive = false;
+        let canvas, ctx;
 
         const isGitHub = window.location.hostname.includes('github.io');
         const MODEL_URL = isGitHub ? `/${window.location.pathname.split('/')[1]}/weights/` : './weights/';
@@ -138,87 +135,77 @@
             document.getElementById('ui-actions').style.display = 'none';
             document.getElementById('loader').style.display = 'block';
             
-            const models = [
-                { id: 'tinyFaceDetector', label: 'Face Detector' },
-                { id: 'faceLandmark68Net', label: '3D Landmarks' },
-                { id: 'faceExpressionNet', label: 'Emotion Core' },
-                { id: 'ageGenderNet', label: 'Biometrics' }
-            ];
-
             try {
+                const models = ['tinyFaceDetector', 'faceLandmark68Net', 'faceExpressionNet', 'ageGenderNet'];
                 for (let i = 0; i < models.length; i++) {
                     const m = models[i];
-                    document.getElementById('status').innerText = `LOADING ${m.label.toUpperCase()}...`;
-                    const path = `${MODEL_URL}${m.id}_model-weights_manifest.json`;
-                    log(`LOADED ASSET FROM: ${path}`, 'load');
-                    
-                    await faceapi.nets[m.id].loadFromUri(MODEL_URL);
-                    
+                    log(`LOADED ASSET FROM: ${MODEL_URL}${m}_model-weights_manifest.json`, 'load');
+                    await faceapi.nets[m].loadFromUri(MODEL_URL);
                     document.getElementById('bar').style.width = ((i+1)/models.length * 100) + "%";
                 }
 
                 if (mode === 'camera') {
-                    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                    video.srcObject = stream;
+                    video.srcObject = await navigator.mediaDevices.getUserMedia({ video: true });
                     document.getElementById('mode-display').innerText = "SYSTEM: LIVE FEED";
                 } else {
                     const file = document.getElementById('video-upload').files[0];
                     video.src = URL.createObjectURL(file);
-                    document.getElementById('mode-display').innerText = "SYSTEM: VIDEO ANALYST";
-                    log(`IMPORT: Analyzing ${file.name}...`);
+                    document.getElementById('mode-display').innerText = "SYSTEM: VIDEO ANALYSIS";
+                    log(`IMPORT: Syncing file ${file.name}...`);
                 }
 
-                document.getElementById('overlay').style.display = 'none';
-                if(!aiActive) runAI();
-                aiActive = true;
+                // Wichtig: Warten bis Video bereit ist
+                video.onloadedmetadata = () => {
+                    video.play();
+                    document.getElementById('overlay').style.display = 'none';
+                    if(!aiActive) initAI();
+                };
+
             } catch (e) {
                 log(`FATAL ERROR: ${e.message}`, 'error');
-                document.getElementById('status').innerText = "BOOT FAILED";
-                document.getElementById('status').style.color = "red";
             }
         }
 
-        function runAI() {
-            const canvas = faceapi.createCanvasFromMedia(video);
+        function initAI() {
+            canvas = faceapi.createCanvasFromMedia(video);
             document.getElementById('wrapper').append(canvas);
+            ctx = canvas.getContext('2d');
+            aiActive = true;
+            requestAnimationFrame(processFrame);
+        }
+
+        async function processFrame() {
+            if(video.paused || video.ended || video.readyState < 2) {
+                requestAnimationFrame(processFrame);
+                return;
+            }
+
+            const size = { width: video.offsetWidth, height: video.offsetHeight };
+            faceapi.matchDimensions(canvas, size);
+
+            const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.4 }))
+                .withFaceLandmarks().withFaceExpressions().withAgeAndGender();
+
+            const resized = faceapi.resizeResults(detections, size);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            document.getElementById('target-count').innerText = `TARGETS: ${resized.length}`;
+
+            if (resized.length > 0) {
+                const primary = resized[0];
+                document.getElementById('val-g').innerText = primary.gender.toUpperCase();
+                document.getElementById('val-a').innerText = Math.round(primary.age) + " YRS";
+                document.getElementById('val-e').innerText = Object.keys(primary.expressions).reduce((a,b)=>primary.expressions[a]>primary.expressions[b]?a:b).toUpperCase();
+
+                resized.forEach(res => {
+                    ctx.strokeStyle = '#5efcff';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(res.detection.box.x, res.detection.box.y, res.detection.box.width, res.detection.box.height);
+                    if(showMesh) faceapi.draw.drawFaceLandmarks(canvas, res);
+                });
+            }
             
-            setInterval(async () => {
-                if(video.paused || video.ended) return;
-
-                const size = { width: video.offsetWidth, height: video.offsetHeight };
-                faceapi.matchDimensions(canvas, size);
-
-                const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.4 });
-                const detections = await faceapi.detectAllFaces(video, options)
-                    .withFaceLandmarks().withFaceExpressions().withAgeAndGender();
-
-                const resized = faceapi.resizeResults(detections, size);
-                const ctx = canvas.getContext('2d');
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-                document.getElementById('target-count').innerText = `TARGETS: ${resized.length}`;
-
-                if (resized.length > 0) {
-                    // Primary Data
-                    const primary = resized[0];
-                    document.getElementById('val-g').innerText = primary.gender.toUpperCase();
-                    document.getElementById('val-a').innerText = Math.round(primary.age) + " YRS";
-                    document.getElementById('val-e').innerText = Object.keys(primary.expressions).reduce((a,b)=>primary.expressions[a]>primary.expressions[b]?a:b).toUpperCase();
-
-                    // Draw for all
-                    resized.forEach(res => {
-                        ctx.strokeStyle = '#5efcff';
-                        ctx.lineWidth = 2;
-                        ctx.strokeRect(res.detection.box.x, res.detection.box.y, res.detection.box.width, res.detection.box.height);
-                        
-                        if(showMesh) {
-                            ctx.fillStyle = '#5efcff';
-                            ctx.strokeStyle = 'rgba(94, 252, 255, 0.4)';
-                            faceapi.draw.drawFaceLandmarks(canvas, res);
-                        }
-                    });
-                }
-            }, 100);
+            // Nutze requestAnimationFrame statt setInterval für flüssigere Video-Analyse
+            setTimeout(() => requestAnimationFrame(processFrame), 50);
         }
     </script>
 </body>
