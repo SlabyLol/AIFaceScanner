@@ -1,1 +1,5 @@
-
+[VER. 4.1 - GENESIS CORE]
+- FIXED: Video Buffer Crash
+- ADDED: 3D Mesh Support
+- ADDED: Target ID Tracking
+- STATUS: Systems Nominal.
