@@ -3,196 +3,213 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DarkFox AI - Advanced Terminal</title>
+    <title>DarkFox AI - Advanced Biometrics</title>
     <script src="dist/face-api.min.js"></script>
     <style>
-        :root { --primary: #ff4d00; --primary-dim: rgba(255, 77, 0, 0.15); --bg: #050505; --text: #00ff00; }
+        :root { --accent: #ff4d00; --bg: #08080a; --panel: #121216; --border: #2a2a30; --text-dim: #777; }
         
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
         body { 
             margin: 0; background: var(--bg); color: white; 
-            font-family: 'Courier New', monospace; 
-            display: flex; flex-direction: column; align-items: center; 
-            justify-content: center; min-height: 100vh; overflow: hidden;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh;
         }
 
-        /* Hintergrund-Effekt: Scanlines */
-        body::before {
-            content: " "; position: absolute; inset: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
-                        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            background-size: 100% 4px, 3px 100%; z-index: 10; pointer-events: none;
+        .main-container { width: 95vw; max-width: 720px; display: flex; flex-direction: column; gap: 15px; }
+
+        /* VIDEO AREA */
+        .viewport { 
+            position: relative; width: 100%; aspect-ratio: 4/3;
+            background: #000; border-radius: 8px; overflow: hidden; border: 1px solid var(--border);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
+        video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+        canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 5; }
 
-        .header { text-align: center; z-index: 5; margin-bottom: 10px; }
-        .header h1 { color: var(--primary); letter-spacing: 8px; font-size: 1.6rem; margin: 0; text-shadow: 0 0 15px var(--primary); }
-
-        .viewfinder { 
-            position: relative; width: 95vw; max-width: 640px; aspect-ratio: 4/3;
-            background: #000; border: 1px solid #333; overflow: hidden;
-            box-shadow: 0 0 40px rgba(0,0,0,1);
+        /* START OVERLAY */
+        #overlay {
+            position: absolute; inset: 0; background: rgba(8,8,10,0.95);
+            display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 50;
         }
-
-        video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; filter: grayscale(0.2) contrast(1.2); }
-        canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 2; }
-
-        /* MODERNER BOOT-SCREEN */
-        #boot-screen {
-            position: absolute; inset: 0; background: var(--bg);
-            display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100;
-        }
-
-        .loader-ui { width: 250px; text-align: center; }
-        .progress-bar { width: 100%; height: 4px; background: #111; margin-top: 15px; position: relative; overflow: hidden; }
-        #progress-fill { position: absolute; left: 0; top: 0; height: 100%; width: 0%; background: var(--primary); box-shadow: 0 0 10px var(--primary); transition: width 0.4s; }
-
-        /* TERMINAL / DEBUG LOG */
-        .terminal { 
-            margin-top: 15px; width: 95vw; max-width: 640px; 
-            height: 150px; background: rgba(10, 10, 10, 0.9); 
-            border: 1px solid #222; border-left: 4px solid var(--primary);
-            padding: 10px; font-size: 0.7rem; color: var(--text); 
-            overflow-y: hidden; display: flex; flex-direction: column-reverse;
-        }
-
-        .log-entry { margin-bottom: 2px; opacity: 0.8; }
-        .log-entry.highlight { color: var(--primary); font-weight: bold; }
-
-        /* BUTTON DESIGN */
         #start-btn {
-            padding: 20px 40px; background: transparent; color: var(--primary);
-            border: 2px solid var(--primary); font-family: 'Courier New', monospace;
-            font-weight: bold; cursor: pointer; letter-spacing: 4px;
-            transition: 0.3s; z-index: 110;
+            padding: 16px 45px; background: var(--accent); color: white;
+            border: none; border-radius: 4px; font-weight: 800; cursor: pointer;
+            letter-spacing: 2px; text-transform: uppercase; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        #start-btn:hover { background: var(--primary); color: black; box-shadow: 0 0 20px var(--primary); }
+        #start-btn:hover { transform: translateY(-2px); box-shadow: 0 0 20px rgba(255, 77, 0, 0.4); }
 
-        /* RADAR SCAN EFFECT */
-        .radar-line {
-            position: absolute; width: 100%; height: 2px; background: rgba(255, 77, 0, 0.5);
-            box-shadow: 0 0 15px var(--primary); top: 0; z-index: 3;
-            animation: scan 3s linear infinite; display: none;
+        /* LOADER */
+        .loader { display: none; width: 280px; text-align: center; }
+        .bar-bg { width: 100%; height: 4px; background: #222; margin: 15px 0; border-radius: 10px; overflow: hidden; }
+        #bar-fill { width: 0%; height: 100%; background: var(--accent); box-shadow: 0 0 10px var(--accent); transition: width 0.4s; }
+
+        /* DATA LABELS (A. G. E.) */
+        .data-grid {
+            display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;
         }
-        @keyframes scan { 0% { top: 0; } 100% { top: 100%; } }
+        .data-card {
+            background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 12px;
+            text-align: center; transition: 0.3s;
+        }
+        .data-card.active { border-color: var(--accent); box-shadow: inset 0 0 10px rgba(255, 77, 0, 0.05); }
+        .label-tag { font-size: 10px; color: var(--accent); font-weight: 900; letter-spacing: 1px; margin-bottom: 5px; display: block; }
+        .label-val { font-size: 16px; font-family: 'JetBrains Mono', monospace; font-weight: 600; }
+
+        /* DEBUG LOG */
+        .console { 
+            background: #000; border-radius: 6px; padding: 15px;
+            height: 160px; overflow-y: auto; font-family: 'JetBrains Mono', 'Consolas', monospace;
+            font-size: 11px; border: 1px solid var(--border); color: #00ff41;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+        }
+        .log-row { margin-bottom: 4px; opacity: 0.8; }
+        .log-file { color: #00a2ff; font-weight: bold; }
+
+        /* FOOTER */
+        .copyright { font-size: 10px; color: var(--text-dim); text-align: center; margin-top: 5px; opacity: 0.6; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>DARKFOX AI</h1>
-        <div style="font-size: 0.6rem; color: #444; letter-spacing: 2px;">SECURE BIOMETRIC TERMINAL</div>
-    </div>
-    
-    <div class="viewfinder" id="wrapper">
-        <div id="boot-screen">
-            <button id="start-btn" onclick="initializeSystem()">INITIALIZE</button>
-            <div class="loader-ui" id="loader-ui" style="display: none;">
-                <div id="load-status" style="font-size: 0.7rem; color: var(--primary);">MOUNTING CORE...</div>
-                <div class="progress-bar"><div id="progress-fill"></div></div>
+    <div class="main-container">
+        <div class="viewport" id="wrapper">
+            <div id="overlay">
+                <button id="start-btn" onclick="bootDarkFox()">Initialize DarkFox AI</button>
+                <div class="loader" id="loader">
+                    <div id="load-status" style="font-size: 11px; font-weight: bold; color: var(--accent);">PREPARING SHARDS...</div>
+                    <div class="bar-bg"><div id="bar-fill"></div></div>
+                </div>
+            </div>
+            <video id="video" autoplay muted playsinline></video>
+        </div>
+
+        <div class="data-grid">
+            <div class="data-card" id="card-g">
+                <span class="label-tag">GENDER [G]</span>
+                <span class="label-val" id="val-g">WAITING</span>
+            </div>
+            <div class="data-card" id="card-a">
+                <span class="label-tag">AGE [A]</span>
+                <span class="label-val" id="val-a">--</span>
+            </div>
+            <div class="data-card" id="card-e">
+                <span class="label-tag">EMOTION [E]</span>
+                <span class="label-val" id="val-e">--</span>
             </div>
         </div>
-        
-        <div class="radar-line" id="radar"></div>
-        <video id="video" autoplay muted playsinline></video>
-    </div>
 
-    <div class="terminal" id="debug-log">
+        <div class="console" id="terminal">
+            <div class="log-row">> DARKFOX CORE v4.0.26 READY.</div>
         </div>
+
+        <div class="copyright">Copyright DarkFox Co. 2026</div>
+    </div>
 
     <script>
         const video = document.getElementById('video');
-        const debugLog = document.getElementById('debug-log');
-        const startBtn = document.getElementById('start-btn');
-        const loaderUi = document.getElementById('loader-ui');
-        const progressFill = document.getElementById('progress-fill');
+        const terminal = document.getElementById('terminal');
+        const barFill = document.getElementById('bar-fill');
         const loadStatus = document.getElementById('load-status');
-        const bootScreen = document.getElementById('boot-screen');
-        const radar = document.getElementById('radar');
+        
+        const cards = { g: document.getElementById('card-g'), a: document.getElementById('card-a'), e: document.getElementById('card-e') };
+        const vals = { g: document.getElementById('val-g'), a: document.getElementById('val-a'), e: document.getElementById('val-e') };
 
         const repoName = window.location.pathname.split('/')[1];
         const MODEL_URL = window.location.hostname.includes('github.io') ? `/${repoName}/weights/` : './weights/';
 
-        function log(msg, highlight = false) {
-            const entry = document.createElement('div');
-            entry.className = highlight ? 'log-entry highlight' : 'log-entry';
-            entry.innerHTML = `> ${new Date().toLocaleTimeString().split(' ')[0]} | ${msg}`;
-            debugLog.prepend(entry);
+        function log(msg, isFile = false) {
+            const div = document.createElement('div');
+            div.className = 'log-row';
+            const timestamp = new Date().toLocaleTimeString();
+            div.innerHTML = `[${timestamp}] <span class="${isFile ? 'log-file' : ''}">${msg}</span>`;
+            terminal.appendChild(div);
+            terminal.scrollTop = terminal.scrollHeight;
         }
 
-        async function initializeSystem() {
-            startBtn.style.display = 'none';
-            loaderUi.style.display = 'block';
-            log("BOOT: Manual override detected.");
+        async function bootDarkFox() {
+            document.getElementById('start-btn').style.display = 'none';
+            document.getElementById('loader').style.display = 'block';
+            
+            log("BOOT: Initiating biometric sequence...");
 
             try {
-                // Kamera zuerst
-                log("IO: Initializing Camera Stream...");
+                log("IO: Binding Camera Hardware...");
                 const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
                 video.srcObject = stream;
 
-                // Sequentielles Laden der KI-Kerne
-                const tasks = [
-                    { n: "DETECTION_CORE", net: faceapi.nets.tinyFaceDetector },
-                    { n: "EMOTION_ENGINE", net: faceapi.nets.faceExpressionNet },
-                    { n: "BIO_ANALYTIC_NET", net: faceapi.nets.ageGenderNet }
+                const models = [
+                    { id: 'TINY_DETECTOR', net: faceapi.nets.tinyFaceDetector },
+                    { id: 'EXPRESSION_CORE', net: faceapi.nets.faceExpressionNet },
+                    { id: 'AGE_GENDER_NET', net: faceapi.nets.ageGenderNet }
                 ];
 
-                for (let i = 0; i < tasks.length; i++) {
-                    loadStatus.innerText = `LOADING ${tasks[i].n}...`;
-                    log(`CORE: Fetching ${tasks[i].n} weights...`);
-                    await tasks[i].net.loadFromUri(MODEL_URL);
-                    progressFill.style.width = ((i + 1) / tasks.length * 100) + "%";
+                for (let i = 0; i < models.length; i++) {
+                    const m = models[i];
+                    loadStatus.innerText = `FETCHING ${m.id}...`;
+                    log(`GET: /weights/${m.id.toLowerCase()}.weights_manifest.json`, true);
+                    
+                    await m.net.loadFromUri(MODEL_URL);
+                    
+                    log(`SUCCESS: ${m.id} shards extracted and verified.`, true);
+                    barFill.style.width = ((i + 1) / models.length * 100) + "%";
                 }
 
-                log("SYSTEM: All modules synchronized.", true);
+                log("SYSTEM: Neural architecture synchronized.");
                 setTimeout(() => {
-                    bootScreen.style.display = 'none';
-                    radar.style.display = 'block';
-                    startAnalysis();
-                }, 500);
+                    document.getElementById('overlay').style.display = 'none';
+                    runEngine();
+                }, 600);
 
             } catch (err) {
-                log("CRITICAL ERROR: " + err.message, true);
-                loadStatus.innerText = "BOOT FAILURE";
-                loadStatus.style.color = "red";
+                log("CRITICAL ERROR: Connection to Weights-Repo failed.");
+                loadStatus.innerText = "LINK FAILED";
             }
         }
 
-        function startAnalysis() {
+        function runEngine() {
             const canvas = faceapi.createCanvasFromMedia(video);
             document.getElementById('wrapper').append(canvas);
-            const displaySize = { width: video.offsetWidth, height: video.offsetHeight };
-            faceapi.matchDimensions(canvas, displaySize);
-
-            log("READY: Scan engine live.");
+            const size = { width: video.offsetWidth, height: video.offsetHeight };
+            faceapi.matchDimensions(canvas, displaySize = size);
 
             setInterval(async () => {
-                const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 128, scoreThreshold: 0.5 });
-                const detections = await faceapi.detectAllFaces(video, options)
+                const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 128 }))
                     .withFaceExpressions()
                     .withAgeAndGender();
 
-                const resized = faceapi.resizeResults(detections, displaySize);
+                const resized = faceapi.resizeResults(detections, size);
                 const ctx = canvas.getContext('2d');
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
 
                 if (resized.length > 0) {
-                    resized.forEach(result => {
-                        const { detection, age, gender, expressions } = result;
-                        const emotion = Object.keys(expressions).reduce((a, b) => expressions[a] > expressions[b] ? a : b);
-                        
-                        // Orange Box mit Ecken-Design
-                        const { x, y, width, height } = detection.box;
-                        ctx.strokeStyle = '#ff4d00';
-                        ctx.lineWidth = 2;
-                        ctx.strokeRect(x, y, width, height);
-                        
-                        // Daten im Terminal
-                        log(`LOCK: ${gender.toUpperCase()} | ${Math.round(age)}y | ${emotion.toUpperCase()}`, true);
-                    });
+                    const { detection, age, gender, expressions } = resized[0];
+                    const emotion = Object.keys(expressions).reduce((a, b) => expressions[a] > expressions[b] ? a : b);
+                    
+                    // UI UPDATES
+                    vals.g.innerText = gender.toUpperCase();
+                    vals.a.innerText = Math.round(age);
+                    vals.e.innerText = emotion.toUpperCase();
+                    Object.values(cards).forEach(c => c.classList.add('active'));
+
+                    // CUSTOM DRAWING: Brackets instead of simple box
+                    const { x, y, width, height } = detection.box;
+                    ctx.strokeStyle = '#ff4d00';
+                    ctx.lineWidth = 3;
+                    
+                    // Zeichne nur die Ecken für High-Tech Look
+                    const len = 20;
+                    ctx.beginPath();
+                    ctx.moveTo(x, y + len); ctx.lineTo(x, y); ctx.lineTo(x + len, y); // Top-Left
+                    ctx.moveTo(x + width - len, y); ctx.lineTo(x + width, y); ctx.lineTo(x + width, y + len); // Top-Right
+                    ctx.stroke();
+
+                } else {
+                    Object.values(vals).forEach(v => v.innerText = "--");
+                    Object.values(cards).forEach(c => c.classList.remove('active'));
+                    vals.g.innerText = "SCANNING";
                 }
-            }, 250);
+            }, 200);
         }
     </script>
 </body>
