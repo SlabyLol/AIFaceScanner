@@ -16,102 +16,104 @@
             display: flex; flex-direction: column; align-items: center; justify-content: center; 
             min-height: 100vh; overflow: hidden; 
         }
-        .main-container { width: 95vw; max-width: 720px; display: flex; flex-direction: column; gap: 10px; z-index: 5; }
         
-        /* VIEWPORT */
+        .main-container { width: 95vw; max-width: 800px; display: flex; flex-direction: column; gap: 15px; z-index: 5; }
+        
+        /* ENHANCED VIEWPORT */
         .viewport { 
-            position: relative; width: 100%; aspect-ratio: 4/3; min-height: 320px;
-            background: #000; border-radius: 12px; overflow: hidden; border: 2px solid var(--border);
-            box-shadow: 0 0 40px rgba(94, 252, 255, 0.2);
+            position: relative; width: 100%; aspect-ratio: 4/3; min-height: 350px;
+            background: #000; border-radius: 15px; overflow: hidden; border: 2px solid var(--border);
+            box-shadow: 0 0 50px rgba(94, 252, 255, 0.1);
         }
         video { position: absolute; inset: 0; width: 100%; height: 100%; transform: scaleX(-1); object-fit: cover; z-index: 1; }
         canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 5; transform: scaleX(-1); pointer-events: none; }
         
+        /* UI OVERLAYS */
+        .badge { position: absolute; z-index: 20; background: rgba(0,0,0,0.8); padding: 8px 15px; border-radius: 4px; font-size: 11px; border: 1px solid var(--accent); color: var(--accent); font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
+        #mode-display { top: 15px; left: 15px; border-left: 4px solid var(--accent); }
+        #target-count { top: 15px; right: 15px; color: var(--warning); border-color: var(--warning); border-right: 4px solid var(--warning); }
+        
+        /* BOOT INTERFACE */
+        #boot-screen { position: absolute; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; transition: opacity 0.8s; }
+        .boot-logo { width: 140px; height: 140px; border-radius: 50%; border: 2px solid var(--accent); margin-bottom: 30px; box-shadow: 0 0 30px var(--accent); object-fit: cover; }
+        
         /* MODALS */
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 500; align-items: center; justify-content: center; padding: 20px; }
-        .modal-content { background: var(--panel); border: 1px solid var(--border); width: 100%; max-width: 500px; padding: 25px; border-radius: 12px; position: relative; box-shadow: 0 0 50px rgba(0,0,0,1); }
-        .close-x { position: absolute; top: 15px; right: 15px; color: #445566; cursor: pointer; font-size: 24px; transition: 0.2s; }
-        .close-x:hover { color: #fff; }
-        .bug-input { width: 100%; background: #010409; border: 1px solid var(--border); color: #fff; padding: 12px; margin-bottom: 10px; font-family: monospace; outline: none; border-radius: 4px; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.96); z-index: 500; align-items: center; justify-content: center; padding: 20px; }
+        .modal-content { background: var(--panel); border: 1px solid var(--border); width: 100%; max-width: 500px; padding: 30px; border-radius: 12px; position: relative; }
+        .close-x { position: absolute; top: 15px; right: 20px; color: #445566; cursor: pointer; font-size: 28px; }
+        .bug-input { width: 100%; background: #010409; border: 1px solid var(--border); color: #fff; padding: 15px; margin-bottom: 12px; font-family: monospace; outline: none; border-radius: 4px; }
         
-        /* BOOT SCREEN */
-        #boot-screen { position: absolute; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; transition: opacity 0.5s; }
-        .boot-logo { width: 130px; height: 130px; border-radius: 50%; border: 2px solid var(--accent); margin-bottom: 25px; box-shadow: 0 0 20px var(--accent); object-fit: cover; }
-        
-        /* UI ELEMENTS */
-        .badge { position: absolute; z-index: 20; background: rgba(0,0,0,0.8); padding: 6px 12px; border-radius: 4px; font-size: 10px; border: 1px solid var(--accent); color: var(--accent); font-weight: bold; }
-        #mode-display { top: 10px; left: 10px; }
-        #target-count { top: 10px; right: 10px; color: var(--warning); border-color: var(--warning); }
-        
-        .controls-container { position: fixed; bottom: 20px; right: 20px; z-index: 200; display: flex; flex-direction: column; gap: 8px; }
-        .ctrl-btn { background: rgba(0,0,0,0.85); padding: 10px 15px; border-radius: 4px; font-size: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; border: 1px solid var(--border); min-width: 170px; text-align: left; transition: 0.2s; color: #fff; }
+        /* CONTROLS */
+        .controls-container { position: fixed; bottom: 30px; right: 30px; z-index: 200; display: flex; flex-direction: column; gap: 10px; }
+        .ctrl-btn { background: rgba(11, 20, 29, 0.9); padding: 14px 20px; border-radius: 4px; font-size: 11px; font-weight: 900; cursor: pointer; text-transform: uppercase; border: 1px solid var(--border); min-width: 190px; text-align: left; transition: 0.3s; color: #fff; letter-spacing: 1px; }
         #btn-mesh { color: var(--mesh-btn); border-color: var(--mesh-btn); }
-        #btn-mesh.active { background: var(--mesh-btn); color: #000; box-shadow: 0 0 15px var(--mesh-btn); }
+        #btn-mesh.active { background: var(--mesh-btn); color: #000; box-shadow: 0 0 20px var(--mesh-btn); }
         #btn-bug { color: var(--bug-btn); border-color: var(--bug-btn); }
         #btn-log { color: var(--log-btn); border-color: var(--log-btn); }
+        .ctrl-btn:hover { padding-left: 30px; background: var(--border); }
         
-        .btn-submit { width: 100%; padding: 12px; background: transparent; border: 1px solid var(--accent); color: var(--accent); cursor: pointer; font-weight: bold; text-transform: uppercase; transition: 0.3s; }
-        .btn-submit:hover { background: var(--accent); color: #000; }
+        .btn-submit { width: 100%; padding: 15px; background: transparent; border: 1px solid var(--accent); color: var(--accent); cursor: pointer; font-weight: 900; text-transform: uppercase; transition: 0.3s; letter-spacing: 2px; }
+        .btn-submit:hover { background: var(--accent); color: #000; box-shadow: 0 0 20px var(--accent); }
 
-        .data-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-        .data-card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 12px; text-align: center; }
-        .tag { font-size: 9px; color: var(--accent); font-weight: bold; display: block; margin-bottom: 4px; }
-        .val { font-size: 14px; font-weight: 900; }
+        /* DATA INFO */
+        .data-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+        .data-card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 20px; text-align: center; border-bottom: 3px solid var(--border); }
+        .tag { font-size: 10px; color: var(--accent); font-weight: bold; display: block; margin-bottom: 6px; letter-spacing: 1px; }
+        .val { font-size: 16px; font-weight: 900; color: #fff; }
         
-        .terminal { background: #010409; border-radius: 8px; padding: 12px; height: 120px; overflow-y: auto; font-size: 10px; color: #556677; border: 1px solid var(--border); }
-        .term-ts { color: var(--log-btn); margin-right: 5px; }
+        /* TERMINAL */
+        .terminal { background: #010409; border-radius: 10px; padding: 15px; height: 140px; overflow-y: auto; font-size: 11px; color: #667788; border: 1px solid var(--border); line-height: 1.5; }
+        .term-ts { color: var(--log-btn); margin-right: 8px; }
     </style>
 </head>
 <body>
 
     <div class="controls-container">
-        <button id="btn-bug" class="ctrl-btn" onclick="openModal('modal-bug')">[!] REPORT BUG</button>
-        <button id="btn-mesh" class="ctrl-btn" onclick="toggleMesh()">3D MESH: OFF</button>
-        <button id="btn-log" class="ctrl-btn" onclick="loadLogs()">UPDATE-LOG.TXT</button>
+        <button id="btn-bug" class="ctrl-btn" onclick="openModal('modal-bug')">[!] EMERGENCY REPORT</button>
+        <button id="btn-mesh" class="ctrl-btn" onclick="toggleMesh()">3D MESH: DISABLED</button>
+        <button id="btn-log" class="ctrl-btn" onclick="loadLogs()">OPEN KERNEL LOG</button>
     </div>
 
     <div id="modal-bug" class="modal">
         <div class="modal-content" style="border-color: var(--bug-btn);">
             <span class="close-x" onclick="closeModal('modal-bug')">&times;</span>
-            <h3 style="color: var(--bug-btn); margin-bottom: 15px;">BUG REPORT SYSTEM</h3>
+            <h3 style="color: var(--bug-btn); margin-bottom: 20px;">REPORT TECHNICAL FAULT</h3>
             <form id="bug-form">
-                <input type="hidden" name="access_key" value="c387b391-5ee4-4fa0-98d6-2617c48f38f5">
-                <input type="text" name="name" class="bug-input" placeholder="User Name / ID" required>
-                <textarea name="message" class="bug-input" style="height: 100px; resize: none;" placeholder="Describe the technical issue..." required></textarea>
-                <button type="submit" class="btn-submit" style="border-color: var(--bug-btn); color: var(--bug-btn);">TRANSMIT TO DARFOX</button>
+                <input type="hidden" name="access_key" value="YOUR-KEY-HERE">
+                <input type="text" name="name" class="bug-input" placeholder="Operator Name" required>
+                <textarea name="message" class="bug-input" style="height: 120px; resize: none;" placeholder="Fault description..." required></textarea>
+                <button type="submit" class="btn-submit" style="border-color: var(--bug-btn); color: var(--bug-btn);">TRANSMIT DATA</button>
             </form>
         </div>
     </div>
 
     <div id="modal-log" class="modal">
-        <div class="modal-content" style="border-color: var(--log-btn);">
+        <div class="modal-content" style="border-color: var(--log-btn); max-width: 600px;">
             <span class="close-x" onclick="closeModal('modal-log')">&times;</span>
-            <h3 style="color: var(--log-btn); margin-bottom: 15px;">SYSTEM UPDATE LOGS</h3>
-            <div id="log-content" style="font-size: 11px; white-space: pre-wrap; color: #8899aa; max-height: 300px; overflow-y: auto; background: #010409; padding: 10px;">Loading logs...</div>
+            <h3 style="color: var(--log-btn); margin-bottom: 20px;">SYSTEM HISTORY</h3>
+            <div id="log-content" style="font-size: 11px; white-space: pre-wrap; color: #8899aa; max-height: 350px; overflow-y: auto; background: #000; padding: 15px; border: 1px solid #111;">Accessing log file...</div>
         </div>
     </div>
 
     <div class="main-container">
         <div class="viewport" id="cam-wrapper">
-            <div class="badge" id="mode-display">SYSTEM: STANDBY</div>
+            <div class="badge" id="mode-display">CORE: STANDBY</div>
             <div class="badge" id="target-count">TARGETS: 0</div>
-            
             <div id="boot-screen">
-                <img src="IMG_0643.jpeg" class="boot-logo" onerror="this.src='https://via.placeholder.com/130?text=DarkFox'">
-                <button class="btn-submit" id="boot-btn" onclick="initAI()" style="width: auto; padding: 12px 30px;">INITIALIZE KERNEL</button>
+                <img src="IMG_0643.jpeg" class="boot-logo" onerror="this.src='https://via.placeholder.com/140/04080d/5efcff?text=DARKFOX'">
+                <button class="btn-submit" id="boot-btn" onclick="initAI()" style="width: auto; padding: 15px 40px;">INITIALIZE AI CORE</button>
             </div>
-            
             <video id="video-feed" autoplay muted playsinline></video>
         </div>
         
         <div class="data-grid">
-            <div class="data-card"><span class="tag">BIOMETRY</span><span id="out-gender" class="val">--</span></div>
-            <div class="data-card"><span class="tag">EST. AGE</span><span id="out-age" class="val">--</span></div>
+            <div class="data-card"><span class="tag">BIOMETRICS</span><span id="out-gender" class="val">--</span></div>
+            <div class="data-card"><span class="tag">EST_AGE</span><span id="out-age" class="val">--</span></div>
             <div class="data-card"><span class="tag">EMOTION</span><span id="out-emotion" class="val">--</span></div>
         </div>
         
         <div class="terminal" id="term-out">
-            <div>[READY] Awaiting system initialization...</div>
+            <div>> [SYSTEM] Awaiting kernel authorization...</div>
         </div>
     </div>
 
@@ -134,32 +136,20 @@
             openModal('modal-log');
             try {
                 const res = await fetch('update-log.txt');
-                document.getElementById('log-content').innerText = res.ok ? await res.text() : "ERROR: update-log.txt not found on server.";
-            } catch (e) { document.getElementById('log-content').innerText = "Network error while fetching logs."; }
+                document.getElementById('log-content').innerText = res.ok ? await res.text() : "SYSTEM ERROR: 'update-log.txt' not found on local server.";
+            } catch (e) { document.getElementById('log-content').innerText = "FATAL: Connection to update server refused."; }
         }
 
         function toggleMesh() {
             meshActive = !meshActive;
             const b = document.getElementById('btn-mesh');
-            b.innerText = meshActive ? "3D MESH: ON" : "3D MESH: OFF";
+            b.innerText = meshActive ? "3D MESH: ACTIVE" : "3D MESH: DISABLED";
             b.classList.toggle('active');
-            log(`Neural Overlay: Mesh ${meshActive ? 'Activated' : 'Deactivated'}`);
+            log(`Neural Overlay: 3D Mesh Network ${meshActive ? 'Engaged' : 'Disengaged'}`);
         }
 
-        document.getElementById('bug-form').onsubmit = async (e) => {
-            e.preventDefault();
-            log("Opening uplink... transmitting bug report...");
-            const res = await fetch('https://api.web3forms.com/submit', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(Object.fromEntries(new FormData(e.target)))
-            });
-            if(res.ok) { log("Uplink successful. Report delivered."); closeModal('modal-bug'); }
-        };
-
         async function initAI() {
-            document.getElementById('boot-btn').innerText = "LOADING...";
-            log("Loading neural network weights...");
+            document.getElementById('boot-btn').innerText = "AUTHORIZING...";
             const PATH = './weights/';
             try {
                 await Promise.all([
@@ -168,15 +158,15 @@
                     faceapi.nets.faceExpressionNet.loadFromUri(PATH),
                     faceapi.nets.ageGenderNet.loadFromUri(PATH)
                 ]);
-                log("Weights loaded. Accessing camera...");
                 const stream = await navigator.mediaDevices.getUserMedia({ video: true });
                 video.srcObject = stream;
-            } catch (e) { log("FATAL: Initialization failed. Check camera permissions."); }
+            } catch (e) { log("BOOT ERROR: Neural models missing in ./weights/ directory."); }
         }
 
         video.onplay = () => {
-            document.getElementById('boot-screen').style.display = 'none';
-            document.getElementById('mode-display').innerText = "SYSTEM: LIVE";
+            document.getElementById('boot-screen').style.opacity = '0';
+            setTimeout(() => document.getElementById('boot-screen').style.display = 'none', 800);
+            document.getElementById('mode-display').innerText = "CORE: LIVE";
             canvas = faceapi.createCanvasFromMedia(video);
             document.getElementById('cam-wrapper').append(canvas);
             ctx = canvas.getContext('2d');
@@ -185,7 +175,7 @@
                 const dims = { width: video.offsetWidth, height: video.offsetHeight };
                 if (canvas.width !== dims.width) faceapi.matchDimensions(canvas, dims);
 
-                const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.4 }))
+                const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 224 }))
                     .withFaceLandmarks().withFaceExpressions().withAgeAndGender();
 
                 const scaled = faceapi.resizeResults(detections, dims);
@@ -193,26 +183,48 @@
 
                 scaled.forEach(res => {
                     const box = res.detection.box;
+                    const pts = res.landmarks.positions;
                     
-                    // 1. DRAW BOX (Cyan)
+                    // 1. TARGET BOX
                     ctx.strokeStyle = '#5efcff';
                     ctx.lineWidth = 2;
                     ctx.strokeRect(box.x, box.y, box.width, box.height);
 
-                    // 2. DRAW MESH (Green)
+                    // 2. CONNECTED MESH
                     if (meshActive) {
+                        ctx.strokeStyle = 'rgba(0, 255, 102, 0.4)';
                         ctx.fillStyle = '#00ff66';
-                        res.landmarks.positions.forEach(p => {
-                            ctx.beginPath(); ctx.arc(p.x, p.y, 1.2, 0, 2*Math.PI); ctx.fill();
+                        ctx.lineWidth = 1;
+
+                        const drawLine = (start, end) => {
+                            ctx.beginPath();
+                            ctx.moveTo(pts[start].x, pts[start].y);
+                            for(let i=start+1; i<=end; i++) ctx.lineTo(pts[i].x, pts[i].y);
+                            ctx.stroke();
+                        };
+
+                        drawLine(0, 16);  // Jawline
+                        drawLine(17, 21); // Left eyebrow
+                        drawLine(22, 26); // Right eyebrow
+                        drawLine(27, 35); // Nose bridge & base
+                        drawLine(36, 41); // Left eye
+                        ctx.closePath(); ctx.stroke();
+                        drawLine(42, 47); // Right eye
+                        ctx.closePath(); ctx.stroke();
+                        drawLine(48, 59); // Outer Mouth
+                        ctx.closePath(); ctx.stroke();
+
+                        pts.forEach(p => {
+                            ctx.beginPath(); ctx.arc(p.x, p.y, 1, 0, 2*Math.PI); ctx.fill();
                         });
                     }
                     
-                    // ID TAG
+                    // TARGET LABEL
                     ctx.save();
                     ctx.scale(-1, 1);
                     ctx.fillStyle = '#5efcff';
                     ctx.font = 'bold 12px monospace';
-                    ctx.fillText(`ID_00${Math.floor(Math.random()*10)}`, -(box.x + box.width), box.y - 10);
+                    ctx.fillText(`TARGET_ID_0${Math.floor(Math.random()*9)}`, -(box.x + box.width), box.y - 12);
                     ctx.restore();
                 });
 
