@@ -12,7 +12,7 @@
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { 
-            background: var(--bg); color: var(--text); font-family: 'Consolas', monospace; 
+            background: var(--bg); color: var(--text); font-family: 'Consolas', 'Courier New', monospace; 
             display: flex; flex-direction: column; align-items: center; justify-content: center; 
             min-height: 100vh; overflow: hidden; 
         }
@@ -28,14 +28,15 @@
         canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 5; transform: scaleX(-1); pointer-events: none; }
         
         /* MODALS */
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 500; align-items: center; justify-content: center; padding: 20px; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 500; align-items: center; justify-content: center; padding: 20px; }
         .modal-content { background: var(--panel); border: 1px solid var(--border); width: 100%; max-width: 500px; padding: 25px; border-radius: 12px; position: relative; box-shadow: 0 0 50px rgba(0,0,0,1); }
-        .close-x { position: absolute; top: 15px; right: 15px; color: #445566; cursor: pointer; font-size: 24px; }
-        .bug-input { width: 100%; background: #010409; border: 1px solid var(--border); color: #fff; padding: 12px; margin-bottom: 10px; font-family: monospace; outline: none; }
+        .close-x { position: absolute; top: 15px; right: 15px; color: #445566; cursor: pointer; font-size: 24px; transition: 0.2s; }
+        .close-x:hover { color: #fff; }
+        .bug-input { width: 100%; background: #010409; border: 1px solid var(--border); color: #fff; padding: 12px; margin-bottom: 10px; font-family: monospace; outline: none; border-radius: 4px; }
         
         /* BOOT SCREEN */
         #boot-screen { position: absolute; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; transition: opacity 0.5s; }
-        .boot-logo { width: 130px; height: 130px; border-radius: 50%; border: 2px solid var(--accent); margin-bottom: 25px; box-shadow: 0 0 20px var(--accent); }
+        .boot-logo { width: 130px; height: 130px; border-radius: 50%; border: 2px solid var(--accent); margin-bottom: 25px; box-shadow: 0 0 20px var(--accent); object-fit: cover; }
         
         /* UI ELEMENTS */
         .badge { position: absolute; z-index: 20; background: rgba(0,0,0,0.8); padding: 6px 12px; border-radius: 4px; font-size: 10px; border: 1px solid var(--accent); color: var(--accent); font-weight: bold; }
@@ -43,29 +44,30 @@
         #target-count { top: 10px; right: 10px; color: var(--warning); border-color: var(--warning); }
         
         .controls-container { position: fixed; bottom: 20px; right: 20px; z-index: 200; display: flex; flex-direction: column; gap: 8px; }
-        .ctrl-btn { background: rgba(0,0,0,0.85); padding: 10px 15px; border-radius: 4px; font-size: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; border: 1px solid var(--border); min-width: 160px; text-align: left; transition: 0.2s; }
+        .ctrl-btn { background: rgba(0,0,0,0.85); padding: 10px 15px; border-radius: 4px; font-size: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; border: 1px solid var(--border); min-width: 170px; text-align: left; transition: 0.2s; color: #fff; }
         #btn-mesh { color: var(--mesh-btn); border-color: var(--mesh-btn); }
         #btn-mesh.active { background: var(--mesh-btn); color: #000; box-shadow: 0 0 15px var(--mesh-btn); }
         #btn-bug { color: var(--bug-btn); border-color: var(--bug-btn); }
         #btn-log { color: var(--log-btn); border-color: var(--log-btn); }
         
-        .btn-submit { width: 100%; padding: 12px; background: transparent; border: 1px solid var(--accent); color: var(--accent); cursor: pointer; font-weight: bold; text-transform: uppercase; }
+        .btn-submit { width: 100%; padding: 12px; background: transparent; border: 1px solid var(--accent); color: var(--accent); cursor: pointer; font-weight: bold; text-transform: uppercase; transition: 0.3s; }
         .btn-submit:hover { background: var(--accent); color: #000; }
 
         .data-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
         .data-card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 12px; text-align: center; }
-        .tag { font-size: 9px; color: var(--accent); font-weight: bold; display: block; }
+        .tag { font-size: 9px; color: var(--accent); font-weight: bold; display: block; margin-bottom: 4px; }
         .val { font-size: 14px; font-weight: 900; }
         
         .terminal { background: #010409; border-radius: 8px; padding: 12px; height: 120px; overflow-y: auto; font-size: 10px; color: #556677; border: 1px solid var(--border); }
+        .term-ts { color: var(--log-btn); margin-right: 5px; }
     </style>
 </head>
 <body>
 
     <div class="controls-container">
-        <button id="btn-bug" class="ctrl-btn" onclick="openModal('modal-bug')">[!] Report Bug</button>
-        <button id="btn-mesh" class="ctrl-btn" onclick="toggleMesh()">3D Mesh: OFF</button>
-        <button id="btn-log" class="ctrl-btn" onclick="loadLogs()">Update-Log.txt</button>
+        <button id="btn-bug" class="ctrl-btn" onclick="openModal('modal-bug')">[!] REPORT BUG</button>
+        <button id="btn-mesh" class="ctrl-btn" onclick="toggleMesh()">3D MESH: OFF</button>
+        <button id="btn-log" class="ctrl-btn" onclick="loadLogs()">UPDATE-LOG.TXT</button>
     </div>
 
     <div id="modal-bug" class="modal">
@@ -74,9 +76,9 @@
             <h3 style="color: var(--bug-btn); margin-bottom: 15px;">BUG REPORT SYSTEM</h3>
             <form id="bug-form">
                 <input type="hidden" name="access_key" value="c387b391-5ee4-4fa0-98d6-2617c48f38f5">
-                <input type="text" name="name" class="bug-input" placeholder="User Name" required>
-                <textarea name="message" class="bug-input" style="height: 100px;" placeholder="Describe the error..." required></textarea>
-                <button type="submit" class="btn-submit" style="border-color: var(--bug-btn); color: var(--bug-btn);">Send to DarkFox</button>
+                <input type="text" name="name" class="bug-input" placeholder="User Name / ID" required>
+                <textarea name="message" class="bug-input" style="height: 100px; resize: none;" placeholder="Describe the technical issue..." required></textarea>
+                <button type="submit" class="btn-submit" style="border-color: var(--bug-btn); color: var(--bug-btn);">TRANSMIT TO DARFOX</button>
             </form>
         </div>
     </div>
@@ -85,7 +87,7 @@
         <div class="modal-content" style="border-color: var(--log-btn);">
             <span class="close-x" onclick="closeModal('modal-log')">&times;</span>
             <h3 style="color: var(--log-btn); margin-bottom: 15px;">SYSTEM UPDATE LOGS</h3>
-            <div id="log-content" style="font-size: 11px; white-space: pre-wrap; color: #8899aa; max-height: 300px; overflow-y: auto;">Loading logs...</div>
+            <div id="log-content" style="font-size: 11px; white-space: pre-wrap; color: #8899aa; max-height: 300px; overflow-y: auto; background: #010409; padding: 10px;">Loading logs...</div>
         </div>
     </div>
 
@@ -96,7 +98,7 @@
             
             <div id="boot-screen">
                 <img src="IMG_0643.jpeg" class="boot-logo" onerror="this.src='https://via.placeholder.com/130?text=DarkFox'">
-                <button class="btn-submit" id="boot-btn" onclick="initAI()" style="width: auto; padding: 12px 30px;">Initialize AI</button>
+                <button class="btn-submit" id="boot-btn" onclick="initAI()" style="width: auto; padding: 12px 30px;">INITIALIZE KERNEL</button>
             </div>
             
             <video id="video-feed" autoplay muted playsinline></video>
@@ -104,12 +106,12 @@
         
         <div class="data-grid">
             <div class="data-card"><span class="tag">BIOMETRY</span><span id="out-gender" class="val">--</span></div>
-            <div class="data-card"><span class="tag">AGE</span><span id="out-age" class="val">--</span></div>
+            <div class="data-card"><span class="tag">EST. AGE</span><span id="out-age" class="val">--</span></div>
             <div class="data-card"><span class="tag">EMOTION</span><span id="out-emotion" class="val">--</span></div>
         </div>
         
         <div class="terminal" id="term-out">
-            <div>[READY] Waiting for kernel boot...</div>
+            <div>[READY] Awaiting system initialization...</div>
         </div>
     </div>
 
@@ -120,7 +122,7 @@
 
         function log(msg) {
             const div = document.createElement('div');
-            div.innerHTML = `> [${new Date().toLocaleTimeString()}] ${msg}`;
+            div.innerHTML = `<span class="term-ts">[${new Date().toLocaleTimeString()}]</span> > ${msg}`;
             term.appendChild(div);
             term.scrollTop = term.scrollHeight;
         }
@@ -132,31 +134,32 @@
             openModal('modal-log');
             try {
                 const res = await fetch('update-log.txt');
-                document.getElementById('log-content').innerText = res.ok ? await res.text() : "Could not find update-log.txt on server.";
-            } catch (e) { document.getElementById('log-content').innerText = "Network error loading logs."; }
+                document.getElementById('log-content').innerText = res.ok ? await res.text() : "ERROR: update-log.txt not found on server.";
+            } catch (e) { document.getElementById('log-content').innerText = "Network error while fetching logs."; }
         }
 
         function toggleMesh() {
             meshActive = !meshActive;
             const b = document.getElementById('btn-mesh');
-            b.innerText = meshActive ? "3D Mesh: ON" : "3D Mesh: OFF";
+            b.innerText = meshActive ? "3D MESH: ON" : "3D MESH: OFF";
             b.classList.toggle('active');
-            log(`Mesh Engine: ${meshActive ? 'Engaged' : 'Disengaged'}`);
+            log(`Neural Overlay: Mesh ${meshActive ? 'Activated' : 'Deactivated'}`);
         }
 
         document.getElementById('bug-form').onsubmit = async (e) => {
             e.preventDefault();
-            log("Transmitting bug report...");
+            log("Opening uplink... transmitting bug report...");
             const res = await fetch('https://api.web3forms.com/submit', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(Object.fromEntries(new FormData(e.target)))
             });
-            if(res.ok) { log("Report delivered successfully."); closeModal('modal-bug'); }
+            if(res.ok) { log("Uplink successful. Report delivered."); closeModal('modal-bug'); }
         };
 
         async function initAI() {
-            document.getElementById('boot-btn').innerText = "BOOTING...";
+            document.getElementById('boot-btn').innerText = "LOADING...";
+            log("Loading neural network weights...");
             const PATH = './weights/';
             try {
                 await Promise.all([
@@ -165,9 +168,10 @@
                     faceapi.nets.faceExpressionNet.loadFromUri(PATH),
                     faceapi.nets.ageGenderNet.loadFromUri(PATH)
                 ]);
+                log("Weights loaded. Accessing camera...");
                 const stream = await navigator.mediaDevices.getUserMedia({ video: true });
                 video.srcObject = stream;
-            } catch (e) { log("CRITICAL: Init failed."); }
+            } catch (e) { log("FATAL: Initialization failed. Check camera permissions."); }
         }
 
         video.onplay = () => {
@@ -177,11 +181,11 @@
             document.getElementById('cam-wrapper').append(canvas);
             ctx = canvas.getContext('2d');
 
-            const render = async () => {
+            const loop = async () => {
                 const dims = { width: video.offsetWidth, height: video.offsetHeight };
                 if (canvas.width !== dims.width) faceapi.matchDimensions(canvas, dims);
 
-                const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 224 }))
+                const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.4 }))
                     .withFaceLandmarks().withFaceExpressions().withAgeAndGender();
 
                 const scaled = faceapi.resizeResults(detections, dims);
@@ -189,28 +193,39 @@
 
                 scaled.forEach(res => {
                     const box = res.detection.box;
+                    
+                    // 1. DRAW BOX (Cyan)
                     ctx.strokeStyle = '#5efcff';
                     ctx.lineWidth = 2;
                     ctx.strokeRect(box.x, box.y, box.width, box.height);
 
+                    // 2. DRAW MESH (Green)
                     if (meshActive) {
                         ctx.fillStyle = '#00ff66';
                         res.landmarks.positions.forEach(p => {
                             ctx.beginPath(); ctx.arc(p.x, p.y, 1.2, 0, 2*Math.PI); ctx.fill();
                         });
                     }
+                    
+                    // ID TAG
+                    ctx.save();
+                    ctx.scale(-1, 1);
+                    ctx.fillStyle = '#5efcff';
+                    ctx.font = 'bold 12px monospace';
+                    ctx.fillText(`ID_00${Math.floor(Math.random()*10)}`, -(box.x + box.width), box.y - 10);
+                    ctx.restore();
                 });
 
                 document.getElementById('target-count').innerText = `TARGETS: ${detections.length}`;
                 if(detections.length > 0) {
                     const d = scaled[0];
                     document.getElementById('out-gender').innerText = d.gender.toUpperCase();
-                    document.getElementById('out-age').innerText = Math.round(d.age) + " Y";
+                    document.getElementById('out-age').innerText = Math.round(d.age) + " YRS";
                     document.getElementById('out-emotion').innerText = Object.keys(d.expressions).reduce((a,b)=>d.expressions[a]>d.expressions[b]?a:b).toUpperCase();
                 }
-                requestAnimationFrame(render);
+                requestAnimationFrame(loop);
             };
-            render();
+            loop();
         };
     </script>
 </body>
