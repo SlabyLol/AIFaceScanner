@@ -1,4 +1,22 @@
 --- DARKFOX AI - SYSTEM UPDATE LOG [2026.03.19] ---
+> VERSION: 5.9 "SMART ID RECOVERY"
+> STATUS: OPERATIONAL
+
+[NEW FEATURES]
+- ID AUTO-RESET: Sequence resets to #001 after 5 seconds of zero target detection.
+- PERSISTENCE TIMER: Monitors scene activity to prevent infinite ID climbing.
+- TRACKING RADIUS: Expanded to 120px for smoother fast-motion capture.
+- BUG SYSTEM: Web3Forms activated with Key: c387b391-5ee4-4fa0-98d6-2617c48f38f5.
+
+[FIXES]
+- ID JITTER: Fixed the issue where users would jump from ID#001 to ID#007.
+- MIRROR ALIGNMENT: Tags and Mesh correctly calibrated for mirrored video.
+
+[SYSTEM NOTES]
+- Deployed at: https://slabylol.github.io/AIFaceScanner/.
+--------------------------------------------------
+
+--- DARKFOX AI - SYSTEM UPDATE LOG [2026.03.19] ---
 > VERSION: 5.8 "ULTIMATE PRODUCTION"
 > STATUS: OPERATIONAL
 
