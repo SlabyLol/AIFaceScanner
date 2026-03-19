@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DarkFox AI - Terminal v5.9</title>
+    <title>DarkFox AI - Terminal v6.0</title>
     <script src="dist/face-api.min.js"></script>
     <style>
         :root { 
@@ -31,25 +31,16 @@
         .boot-logo { width: 130px; height: 130px; border-radius: 50%; box-shadow: 0 0 30px var(--accent); margin-bottom: 25px; }
         .btn-main { padding: 12px 24px; background: transparent; color: var(--accent); border: 1px solid var(--accent); border-radius: 4px; font-weight: 800; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; font-size: 11px; transition: 0.3s; }
         .btn-main:hover { background: var(--accent); color: #000; box-shadow: 0 0 20px var(--accent); }
-        
-        /* CONTROLS */
         .controls-container { position: fixed; bottom: 20px; right: 20px; z-index: 200; display: flex; flex-direction: column; gap: 8px; }
         .ctrl-btn { background: rgba(0,0,0,0.85); padding: 10px 15px; border-radius: 4px; font-size: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: 0.2s; min-width: 140px; text-align: left; }
         #btn-bug { color: var(--bug-btn); border: 1px solid var(--bug-btn); }
         #btn-mesh { color: var(--mesh-btn); border: 1px solid var(--mesh-btn); }
         #btn-mesh.active { background: var(--mesh-btn); color: #000; box-shadow: 0 0 15px var(--mesh-btn); }
         #btn-log { color: var(--log-btn); border: 1px solid var(--log-btn); }
-
-        /* MODALS */
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 300; align-items: center; justify-content: center; padding: 20px; }
         .modal-content { background: var(--panel); border: 1px solid var(--border); width: 100%; max-width: 500px; padding: 25px; border-radius: 12px; position: relative; }
-        #log-body { font-size: 11px; color: #8899aa; white-space: pre-wrap; max-height: 300px; overflow-y: auto; user-select: all; padding-right: 12px; line-height: 1.5; }
-        #log-body::-webkit-scrollbar { width: 4px; }
-        #log-body::-webkit-scrollbar-thumb { background: var(--log-btn); border-radius: 10px; }
         .bug-input { width: 100%; background: #010409; border: 1px solid var(--border); color: #fff; padding: 10px; margin-bottom: 10px; font-family: monospace; font-size: 12px; outline: none; }
         .close-x { position: absolute; top: 15px; right: 15px; color: #445566; cursor: pointer; font-size: 22px; }
-
-        /* DATA GRID */
         .data-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
         .data-card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 12px; text-align: center; }
         .tag { font-size: 9px; color: var(--accent); font-weight: bold; }
@@ -68,14 +59,14 @@
     <div id="modal-bug" class="modal">
         <div class="modal-content" style="border-color: var(--bug-btn);">
             <span class="close-x" onclick="toggleModal('modal-bug', false)">&times;</span>
-            <div style="color:var(--bug-btn); font-weight:bold; margin-bottom:15px;">BUG REPORT CONSOLE</div>
+            <div style="color:var(--bug-btn); font-weight:bold; margin-bottom:15px; text-transform:uppercase;">Bug Transmission</div>
             <form id="bug-form">
                 <input type="hidden" name="access_key" value="c387b391-5ee4-4fa0-98d6-2617c48f38f5">
                 <input type="text" name="name" class="bug-input" placeholder="User Name" required>
-                <input type="email" id="bug-email" name="email" class="bug-input" placeholder="Email" required>
+                <input type="email" name="email" class="bug-input" placeholder="Email" required>
                 <input type="text" name="subject" class="bug-input" placeholder="Subject" required>
-                <textarea name="message" class="bug-input" style="height: 80px; resize: none;" placeholder="Details..." required></textarea>
-                <button type="submit" class="btn-main" style="width: 100%; border-color: var(--bug-btn); color: var(--bug-btn);">Transmit Report</button>
+                <textarea name="message" class="bug-input" style="height: 80px; resize: none;" placeholder="Log details..." required></textarea>
+                <button type="submit" class="btn-main" style="width: 100%; border-color: var(--bug-btn); color: var(--bug-btn);">Send Report</button>
             </form>
         </div>
     </div>
@@ -83,8 +74,7 @@
     <div id="modal-log" class="modal">
         <div class="modal-content" style="border-color: var(--log-btn);">
             <span class="close-x" onclick="toggleModal('modal-log', false)">&times;</span>
-            <div style="color:var(--log-btn); font-weight:bold; margin-bottom:10px;">SYSTEM HISTORY</div>
-            <div id="log-body">Fetching...</div>
+            <div id="log-body" style="font-size: 11px; max-height: 300px; overflow-y: auto; color: #8899aa;">Fetching...</div>
         </div>
     </div>
 
@@ -94,13 +84,13 @@
             <div class="badge" id="target-count">TARGETS: 0</div>
             <div id="boot-screen">
                 <img src="IMG_0643.jpeg" class="boot-logo">
-                <button class="btn-main" onclick="startEngine()">Initialize System</button>
+                <button class="btn-main" onclick="startEngine()">Boot AI Core</button>
             </div>
             <video id="video-feed" autoplay muted playsinline></video>
         </div>
         <div class="data-grid">
             <div class="data-card"><span class="tag">GENDER</span><span id="out-gender" class="val">--</span></div>
-            <div class="data-card"><span class="tag">EST. AGE</span><span id="out-age" class="val">--</span></div>
+            <div class="data-card"><span class="tag">AGE</span><span id="out-age" class="val">--</span></div>
             <div class="data-card"><span class="tag">EMOTION</span><span id="out-emotion" class="val">--</span></div>
         </div>
         <div class="terminal" id="term-out">> CONNECTED.</div>
@@ -110,11 +100,7 @@
         const video = document.getElementById('video-feed');
         const term = document.getElementById('term-out');
         let canvas, ctx, meshEnabled = false;
-        
-        // TRACKING VARIABLES
-        let nextFaceId = 1;
-        let trackedFaces = [];
-        let lastSeenTime = Date.now();
+        let nextFaceId = 1, trackedFaces = [], lastSeenTime = Date.now();
 
         function printTerm(msg) {
             const div = document.createElement('div');
@@ -128,8 +114,8 @@
             toggleModal('modal-log', true);
             try {
                 const res = await fetch('update-log.txt');
-                document.getElementById('log-body').innerText = res.ok ? await res.text() : "ERROR: update-log.txt missing.";
-            } catch (e) { document.getElementById('log-body').innerText = "FETCH FAILED."; }
+                document.getElementById('log-body').innerText = res.ok ? await res.text() : "Log missing.";
+            } catch (e) { document.getElementById('log-body').innerText = "Fetch error."; }
         }
 
         function toggleMesh() {
@@ -137,49 +123,42 @@
             const b = document.getElementById('btn-mesh');
             b.innerText = meshEnabled ? "3D Mesh ON" : "3D Mesh OFF";
             b.classList.toggle('active');
-            printTerm(`ENGINE: Mesh set to ${meshEnabled ? 'VISIBLE' : 'HIDDEN'}`);
         }
 
-        // BUG REPORT AJAX
         document.getElementById('bug-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             const btn = e.target.querySelector('button');
             btn.innerText = "SENDING..."; btn.disabled = true;
-            const formData = new FormData(e.target);
-            const json = JSON.stringify(Object.fromEntries(formData));
             try {
                 const res = await fetch('https://api.web3forms.com/submit', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                    body: json
+                    body: JSON.stringify(Object.fromEntries(new FormData(e.target)))
                 });
                 if (res.ok) {
-                    printTerm("SUCCESS: Bug report sent via Web3Forms.");
+                    printTerm("SUCCESS: Report sent to darkfox.tobias@outlook.com");
                     e.target.reset();
-                    setTimeout(() => { toggleModal('modal-bug', false); btn.innerText = "Transmit Report"; btn.disabled = false; }, 2000);
+                    setTimeout(() => { toggleModal('modal-bug', false); btn.innerText = "Send Report"; btn.disabled = false; }, 2000);
                 }
-            } catch (err) { printTerm("FATAL: Bug report failed."); btn.disabled = false; }
+            } catch (err) { printTerm("ERROR: Transmission failed."); btn.disabled = false; }
         });
 
         async function startEngine() {
-            printTerm("CORE: Loading AI layers...");
-            try {
-                const PATH = './weights/';
-                await Promise.all([
-                    faceapi.nets.tinyFaceDetector.loadFromUri(PATH),
-                    faceapi.nets.faceLandmark68Net.loadFromUri(PATH),
-                    faceapi.nets.faceExpressionNet.loadFromUri(PATH),
-                    faceapi.nets.ageGenderNet.loadFromUri(PATH)
-                ]);
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                video.srcObject = stream;
-                video.onloadedmetadata = () => {
-                    document.getElementById('boot-screen').style.opacity = '0';
-                    setTimeout(() => document.getElementById('boot-screen').remove(), 800);
-                    document.getElementById('mode-display').innerText = "ENGINE: LIVE";
-                    runProcessing();
-                };
-            } catch(e) { printTerm("BOOT ERROR: " + e.message); }
+            printTerm("CORE: Accessing neural weights...");
+            const PATH = './weights/';
+            await Promise.all([
+                faceapi.nets.tinyFaceDetector.loadFromUri(PATH),
+                faceapi.nets.faceLandmark68Net.loadFromUri(PATH),
+                faceapi.nets.faceExpressionNet.loadFromUri(PATH),
+                faceapi.nets.ageGenderNet.loadFromUri(PATH)
+            ]);
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            video.srcObject = stream;
+            video.onloadedmetadata = () => {
+                document.getElementById('boot-screen').remove();
+                document.getElementById('mode-display').innerText = "ENGINE: LIVE";
+                runProcessing();
+            };
         }
 
         async function runProcessing() {
@@ -197,12 +176,8 @@
                 const scaled = faceapi.resizeResults(detections, dims);
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                // --- SMART ID RESET LOGIC ---
                 if (scaled.length === 0) {
-                    if (Date.now() - lastSeenTime > 5000 && nextFaceId !== 1) {
-                        nextFaceId = 1;
-                        printTerm("SYSTEM: 5s inactive. Resetting ID sequence to #001.");
-                    }
+                    if (Date.now() - lastSeenTime > 5000) nextFaceId = 1;
                 } else {
                     lastSeenTime = Date.now();
                 }
@@ -210,40 +185,41 @@
                 let currentFrameFaces = [];
                 scaled.forEach(item => {
                     const box = item.detection.box;
-                    let match = trackedFaces.find(prev => {
-                        const dist = Math.sqrt(Math.pow(prev.x - box.x, 2) + Math.pow(prev.y - box.y, 2));
-                        return dist < 120; // Increased tracking radius
-                    });
-
+                    let match = trackedFaces.find(p => Math.sqrt(Math.pow(p.x - box.x, 2) + Math.pow(p.y - box.y, 2)) < 120);
                     let id = match ? match.id : nextFaceId++;
-                    currentFrameFaces.push({ id, x: box.x, y: box.y, box });
+                    currentFrameFaces.push({ id, x: box.x, y: box.y });
 
-                    // VISUALS
-                    ctx.strokeStyle = '#5efcff';
-                    ctx.lineWidth = 2;
-                    ctx.strokeRect(box.x, box.y, box.width, box.height);
+                    // Custom Mesh Rendering
+                    if(meshEnabled) {
+                        const pts = item.landmarks.positions;
+                        ctx.fillStyle = '#00ff66'; ctx.strokeStyle = '#00ff66'; ctx.lineWidth = 1;
+                        pts.forEach(p => { ctx.beginPath(); ctx.arc(p.x, p.y, 1.2, 0, 2*Math.PI); ctx.fill(); });
+                        
+                        const drawP = (s, e, close = false) => {
+                            ctx.beginPath(); ctx.moveTo(pts[s].x, pts[s].y);
+                            for(let i=s+1; i<=e; i++) ctx.lineTo(pts[i].x, pts[i].y);
+                            if(close) ctx.lineTo(pts[s].x, pts[s].y);
+                            ctx.stroke();
+                        };
+                        drawP(0, 16); drawP(17, 21); drawP(22, 26); drawP(27, 35); 
+                        drawP(36, 41, true); drawP(42, 47, true); drawP(48, 59, true);
+                    }
 
-                    // MIRRORED ID TAG
-                    ctx.save();
-                    ctx.scale(-1, 1);
-                    ctx.fillStyle = '#5efcff';
-                    ctx.font = 'bold 12px monospace';
+                    // ID Label
+                    ctx.save(); ctx.scale(-1, 1);
+                    ctx.fillStyle = '#5efcff'; ctx.font = 'bold 12px monospace';
                     ctx.fillText(`ID#00${id}`, -(box.x + 5), box.y - 10);
                     ctx.restore();
-
-                    if(meshEnabled) faceapi.draw.drawFaceLandmarks(canvas, item);
                 });
 
                 trackedFaces = currentFrameFaces;
-                document.getElementById('target-count').innerText = `TARGETS: ${currentFrameFaces.length}`;
-
+                document.getElementById('target-count').innerText = `TARGETS: ${scaled.length}`;
                 if(scaled.length > 0) {
                     const p = scaled[0];
                     document.getElementById('out-gender').innerText = p.gender.toUpperCase();
                     document.getElementById('out-age').innerText = Math.round(p.age) + " YRS";
                     document.getElementById('out-emotion').innerText = Object.keys(p.expressions).reduce((a,b)=>p.expressions[a]>p.expressions[b]?a:b).toUpperCase();
                 }
-
                 requestAnimationFrame(loop);
             };
             loop();
