@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DarkFox AI - Terminal v5.8</title>
+    <title>DarkFox AI - Terminal v5.9</title>
     <script src="dist/face-api.min.js"></script>
     <style>
         :root { 
@@ -31,12 +31,16 @@
         .boot-logo { width: 130px; height: 130px; border-radius: 50%; box-shadow: 0 0 30px var(--accent); margin-bottom: 25px; }
         .btn-main { padding: 12px 24px; background: transparent; color: var(--accent); border: 1px solid var(--accent); border-radius: 4px; font-weight: 800; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; font-size: 11px; transition: 0.3s; }
         .btn-main:hover { background: var(--accent); color: #000; box-shadow: 0 0 20px var(--accent); }
+        
+        /* CONTROLS */
         .controls-container { position: fixed; bottom: 20px; right: 20px; z-index: 200; display: flex; flex-direction: column; gap: 8px; }
         .ctrl-btn { background: rgba(0,0,0,0.85); padding: 10px 15px; border-radius: 4px; font-size: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: 0.2s; min-width: 140px; text-align: left; }
         #btn-bug { color: var(--bug-btn); border: 1px solid var(--bug-btn); }
         #btn-mesh { color: var(--mesh-btn); border: 1px solid var(--mesh-btn); }
         #btn-mesh.active { background: var(--mesh-btn); color: #000; box-shadow: 0 0 15px var(--mesh-btn); }
         #btn-log { color: var(--log-btn); border: 1px solid var(--log-btn); }
+
+        /* MODALS */
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 300; align-items: center; justify-content: center; padding: 20px; }
         .modal-content { background: var(--panel); border: 1px solid var(--border); width: 100%; max-width: 500px; padding: 25px; border-radius: 12px; position: relative; }
         #log-body { font-size: 11px; color: #8899aa; white-space: pre-wrap; max-height: 300px; overflow-y: auto; user-select: all; padding-right: 12px; line-height: 1.5; }
@@ -44,6 +48,8 @@
         #log-body::-webkit-scrollbar-thumb { background: var(--log-btn); border-radius: 10px; }
         .bug-input { width: 100%; background: #010409; border: 1px solid var(--border); color: #fff; padding: 10px; margin-bottom: 10px; font-family: monospace; font-size: 12px; outline: none; }
         .close-x { position: absolute; top: 15px; right: 15px; color: #445566; cursor: pointer; font-size: 22px; }
+
+        /* DATA GRID */
         .data-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
         .data-card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 12px; text-align: center; }
         .tag { font-size: 9px; color: var(--accent); font-weight: bold; }
@@ -62,14 +68,14 @@
     <div id="modal-bug" class="modal">
         <div class="modal-content" style="border-color: var(--bug-btn);">
             <span class="close-x" onclick="toggleModal('modal-bug', false)">&times;</span>
-            <div style="color:var(--bug-btn); font-weight:bold; margin-bottom:15px; text-transform: uppercase;">Bug Report Console</div>
+            <div style="color:var(--bug-btn); font-weight:bold; margin-bottom:15px;">BUG REPORT CONSOLE</div>
             <form id="bug-form">
                 <input type="hidden" name="access_key" value="c387b391-5ee4-4fa0-98d6-2617c48f38f5">
-                <input type="text" name="name" class="bug-input" placeholder="Your Name" required>
-                <input type="email" id="bug-email" name="email" class="bug-input" placeholder="Your Email" required>
-                <input type="text" name="subject" class="bug-input" placeholder="Issue Subject" required>
-                <textarea name="message" class="bug-input" style="height: 80px; resize: none;" placeholder="Details regarding the bug..." required></textarea>
-                <button type="submit" class="btn-main" style="width: 100%; border-color: var(--bug-btn); color: var(--bug-btn);">Transmit to DarkFox</button>
+                <input type="text" name="name" class="bug-input" placeholder="User Name" required>
+                <input type="email" id="bug-email" name="email" class="bug-input" placeholder="Email" required>
+                <input type="text" name="subject" class="bug-input" placeholder="Subject" required>
+                <textarea name="message" class="bug-input" style="height: 80px; resize: none;" placeholder="Details..." required></textarea>
+                <button type="submit" class="btn-main" style="width: 100%; border-color: var(--bug-btn); color: var(--bug-btn);">Transmit Report</button>
             </form>
         </div>
     </div>
@@ -77,8 +83,8 @@
     <div id="modal-log" class="modal">
         <div class="modal-content" style="border-color: var(--log-btn);">
             <span class="close-x" onclick="toggleModal('modal-log', false)">&times;</span>
-            <div style="color:var(--log-btn); font-weight:bold; margin-bottom:10px;">REPOS: UPDATE-LOG.TXT</div>
-            <div id="log-body">Syncing...</div>
+            <div style="color:var(--log-btn); font-weight:bold; margin-bottom:10px;">SYSTEM HISTORY</div>
+            <div id="log-body">Fetching...</div>
         </div>
     </div>
 
@@ -88,24 +94,27 @@
             <div class="badge" id="target-count">TARGETS: 0</div>
             <div id="boot-screen">
                 <img src="IMG_0643.jpeg" class="boot-logo">
-                <button class="btn-main" onclick="startEngine()">Initialize AI Core</button>
+                <button class="btn-main" onclick="startEngine()">Initialize System</button>
             </div>
             <video id="video-feed" autoplay muted playsinline></video>
         </div>
         <div class="data-grid">
-            <div class="data-card"><span class="tag">PRIMARY SEX</span><span id="out-gender" class="val">--</span></div>
+            <div class="data-card"><span class="tag">GENDER</span><span id="out-gender" class="val">--</span></div>
             <div class="data-card"><span class="tag">EST. AGE</span><span id="out-age" class="val">--</span></div>
             <div class="data-card"><span class="tag">EMOTION</span><span id="out-emotion" class="val">--</span></div>
         </div>
-        <div class="terminal" id="term-out">> SYSTEM READY. STANDING BY.</div>
+        <div class="terminal" id="term-out">> CONNECTED.</div>
     </div>
 
     <script>
         const video = document.getElementById('video-feed');
         const term = document.getElementById('term-out');
         let canvas, ctx, meshEnabled = false;
+        
+        // TRACKING VARIABLES
         let nextFaceId = 1;
         let trackedFaces = [];
+        let lastSeenTime = Date.now();
 
         function printTerm(msg) {
             const div = document.createElement('div');
@@ -119,8 +128,8 @@
             toggleModal('modal-log', true);
             try {
                 const res = await fetch('update-log.txt');
-                document.getElementById('log-body').innerText = res.ok ? await res.text() : "ERROR: Log file not found.";
-            } catch (e) { document.getElementById('log-body').innerText = "FETCH ERROR."; }
+                document.getElementById('log-body').innerText = res.ok ? await res.text() : "ERROR: update-log.txt missing.";
+            } catch (e) { document.getElementById('log-body').innerText = "FETCH FAILED."; }
         }
 
         function toggleMesh() {
@@ -128,18 +137,16 @@
             const b = document.getElementById('btn-mesh');
             b.innerText = meshEnabled ? "3D Mesh ON" : "3D Mesh OFF";
             b.classList.toggle('active');
-            printTerm(`ENGINE: Mesh visualization ${meshEnabled ? 'ENABLED' : 'DISABLED'}`);
+            printTerm(`ENGINE: Mesh set to ${meshEnabled ? 'VISIBLE' : 'HIDDEN'}`);
         }
 
+        // BUG REPORT AJAX
         document.getElementById('bug-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             const btn = e.target.querySelector('button');
-            btn.innerText = "TRANSMITTING...";
-            btn.disabled = true;
-
+            btn.innerText = "SENDING..."; btn.disabled = true;
             const formData = new FormData(e.target);
             const json = JSON.stringify(Object.fromEntries(formData));
-
             try {
                 const res = await fetch('https://api.web3forms.com/submit', {
                     method: 'POST',
@@ -147,15 +154,15 @@
                     body: json
                 });
                 if (res.ok) {
-                    printTerm("SUCCESS: Report delivered to darkfox.tobias@outlook.com");
+                    printTerm("SUCCESS: Bug report sent via Web3Forms.");
                     e.target.reset();
-                    setTimeout(() => { toggleModal('modal-bug', false); btn.innerText = "Transmit to DarkFox"; btn.disabled = false; }, 2000);
+                    setTimeout(() => { toggleModal('modal-bug', false); btn.innerText = "Transmit Report"; btn.disabled = false; }, 2000);
                 }
-            } catch (err) { printTerm("FATAL: Transmission failed."); btn.disabled = false; }
+            } catch (err) { printTerm("FATAL: Bug report failed."); btn.disabled = false; }
         });
 
         async function startEngine() {
-            printTerm("CORE: Accessing neural weights...");
+            printTerm("CORE: Loading AI layers...");
             try {
                 const PATH = './weights/';
                 await Promise.all([
@@ -169,10 +176,10 @@
                 video.onloadedmetadata = () => {
                     document.getElementById('boot-screen').style.opacity = '0';
                     setTimeout(() => document.getElementById('boot-screen').remove(), 800);
-                    document.getElementById('mode-display').innerText = "ENGINE: LIVE ANALYSIS";
+                    document.getElementById('mode-display').innerText = "ENGINE: LIVE";
                     runProcessing();
                 };
-            } catch(e) { printTerm("FATAL ERROR: " + e.message); }
+            } catch(e) { printTerm("BOOT ERROR: " + e.message); }
         }
 
         async function runProcessing() {
@@ -190,23 +197,33 @@
                 const scaled = faceapi.resizeResults(detections, dims);
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+                // --- SMART ID RESET LOGIC ---
+                if (scaled.length === 0) {
+                    if (Date.now() - lastSeenTime > 5000 && nextFaceId !== 1) {
+                        nextFaceId = 1;
+                        printTerm("SYSTEM: 5s inactive. Resetting ID sequence to #001.");
+                    }
+                } else {
+                    lastSeenTime = Date.now();
+                }
+
                 let currentFrameFaces = [];
                 scaled.forEach(item => {
                     const box = item.detection.box;
                     let match = trackedFaces.find(prev => {
                         const dist = Math.sqrt(Math.pow(prev.x - box.x, 2) + Math.pow(prev.y - box.y, 2));
-                        return dist < 100;
+                        return dist < 120; // Increased tracking radius
                     });
 
                     let id = match ? match.id : nextFaceId++;
                     currentFrameFaces.push({ id, x: box.x, y: box.y, box });
 
-                    // Draw Detection Box
+                    // VISUALS
                     ctx.strokeStyle = '#5efcff';
                     ctx.lineWidth = 2;
                     ctx.strokeRect(box.x, box.y, box.width, box.height);
 
-                    // Draw ID Label
+                    // MIRRORED ID TAG
                     ctx.save();
                     ctx.scale(-1, 1);
                     ctx.fillStyle = '#5efcff';
@@ -214,7 +231,6 @@
                     ctx.fillText(`ID#00${id}`, -(box.x + 5), box.y - 10);
                     ctx.restore();
 
-                    // Draw Mesh
                     if(meshEnabled) faceapi.draw.drawFaceLandmarks(canvas, item);
                 });
 
