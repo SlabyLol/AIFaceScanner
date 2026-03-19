@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DarkFox AI - Terminal v6.2</title>
+    <title>DarkFox AI - Terminal v6.3</title>
     <script src="dist/face-api.min.js"></script>
     <style>
         :root { 
@@ -18,22 +18,23 @@
         }
         .main-container { width: 95vw; max-width: 720px; display: flex; flex-direction: column; gap: 10px; z-index: 5; }
         
-        /* ALIGNMENT FIX: Removed fixed aspect-ratio, it's set dynamically by JS now */
+        /* VIEWPORT FIX: Added min-height and default aspect ratio so the boot screen is visible! */
         .viewport { 
-            position: relative; width: 100%;
+            position: relative; width: 100%; aspect-ratio: 4/3; min-height: 300px;
             background: #000; border-radius: 12px; overflow: hidden; border: 2px solid var(--border);
             box-shadow: 0 0 40px rgba(94, 252, 255, 0.15);
         }
         
-        /* MIRROR FIX: Both Video and Canvas are mirrored identically */
         video { position: absolute; inset: 0; width: 100%; height: 100%; transform: scaleX(-1); display: block; object-fit: contain; }
         canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 10; transform: scaleX(-1); pointer-events: none; }
         
         .badge { position: absolute; z-index: 20; background: rgba(0,0,0,0.85); padding: 6px 14px; border-radius: 4px; font-size: 11px; border: 1px solid var(--accent); color: var(--accent); font-weight: 900; }
         #mode-display { top: 12px; left: 12px; }
         #target-count { top: 12px; right: 12px; color: var(--warning); border-color: var(--warning); }
+        
+        /* BOOT SCREEN RESTORED */
         #boot-screen { position: absolute; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; transition: opacity 0.8s; }
-        .boot-logo { width: 130px; height: 130px; border-radius: 50%; box-shadow: 0 0 30px var(--accent); margin-bottom: 25px; }
+        .boot-logo { width: 130px; height: 130px; border-radius: 50%; box-shadow: 0 0 30px var(--accent); margin-bottom: 25px; object-fit: cover; }
         .btn-main { padding: 12px 24px; background: transparent; color: var(--accent); border: 1px solid var(--accent); border-radius: 4px; font-weight: 800; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; font-size: 11px; transition: 0.3s; }
         .btn-main:hover { background: var(--accent); color: #000; box-shadow: 0 0 20px var(--accent); }
         
@@ -53,7 +54,11 @@
         .data-card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 12px; text-align: center; }
         .tag { font-size: 9px; color: var(--accent); font-weight: bold; }
         .val { font-size: 15px; font-weight: 900; display: block; margin-top: 4px; }
-        .terminal { background: #010409; border-radius: 8px; padding: 10px; height: 100px; overflow-y: auto; font-size: 10px; color: #445566; border: 1px solid var(--border); }
+        
+        /* LIVE DEBUG CONSOLE */
+        .terminal { background: #010409; border-radius: 8px; padding: 10px; height: 120px; overflow-y: auto; font-size: 10px; color: #445566; border: 1px solid var(--border); scroll-behavior: smooth; }
+        .term-line { margin-bottom: 4px; }
+        .term-time { color: var(--log-btn); margin-right: 5px; }
     </style>
 </head>
 <body>
@@ -82,7 +87,7 @@
     <div id="modal-log" class="modal">
         <div class="modal-content" style="border-color: var(--log-btn);">
             <span class="close-x" onclick="toggleModal('modal-log', false)">&times;</span>
-            <div id="log-body" style="font-size: 11px; white-space: pre-wrap; color: #8899aa; line-height: 1.5;">Fetching Log...</div>
+            <div id="log-body" style="font-size: 11px; white-space: pre-wrap; color: #8899aa; line-height: 1.5; max-height: 60vh; overflow-y: auto;">Fetching Log...</div>
         </div>
     </div>
 
@@ -93,7 +98,7 @@
             
             <div id="boot-screen">
                 <img src="IMG_0643.jpeg" class="boot-logo" alt="Logo">
-                <button class="btn-main" onclick="startEngine()">Initialize System</button>
+                <button class="btn-main" id="boot-btn" onclick="startEngine()">Initialize System</button>
             </div>
             
             <video id="video-feed" autoplay muted playsinline></video>
@@ -104,7 +109,10 @@
             <div class="data-card"><span class="tag">EST. AGE</span><span id="out-age" class="val">--</span></div>
             <div class="data-card"><span class="tag">EMOTION</span><span id="out-emotion" class="val">--</span></div>
         </div>
-        <div class="terminal" id="term-out">> SYSTEM READY. STANDING BY.</div>
+        
+        <div class="terminal" id="term-out">
+            <div class="term-line"><span class="term-time">[SYSTEM]</span> > AWAITING INITIALIZATION...</div>
+        </div>
     </div>
 
     <script>
@@ -113,11 +121,13 @@
         let canvas, ctx, meshEnabled = false;
         let nextFaceId = 1, trackedFaces = [], lastSeenTime = Date.now();
 
-        // Terminal Output
+        // Terminal Output (Auto-Scroll)
         function printTerm(msg) {
             const div = document.createElement('div');
-            div.innerText = `[${new Date().toLocaleTimeString()}] > ${msg}`;
-            term.prepend(div);
+            div.className = 'term-line';
+            div.innerHTML = `<span class="term-time">[${new Date().toLocaleTimeString()}]</span> > ${msg}`;
+            term.appendChild(div);
+            term.scrollTop = term.scrollHeight; // Auto-scrollt nach unten
         }
 
         // Modals
@@ -160,6 +170,7 @@
 
         // Initialize AI
         async function startEngine() {
+            document.getElementById('boot-btn').innerText = "LOADING AI...";
             printTerm("CORE: Accessing neural weights...");
             const PATH = './weights/';
             try {
@@ -169,20 +180,23 @@
                     faceapi.nets.faceExpressionNet.loadFromUri(PATH),
                     faceapi.nets.ageGenderNet.loadFromUri(PATH)
                 ]);
+                printTerm("CORE: Neural network loaded. Starting camera...");
                 const stream = await navigator.mediaDevices.getUserMedia({ video: true });
                 video.srcObject = stream;
                 
                 // WAIT FOR VIDEO METADATA TO FIX ALIGNMENT
                 video.onloadedmetadata = () => {
-                    // ALIGNMENT FIX: Set wrapper to exactly match camera aspect ratio
                     const ratio = video.videoWidth / video.videoHeight;
                     document.getElementById('cam-wrapper').style.aspectRatio = ratio;
                     
-                    document.getElementById('boot-screen').remove();
+                    document.getElementById('boot-screen').style.opacity = '0';
+                    setTimeout(() => document.getElementById('boot-screen').style.display = 'none', 800);
+                    
                     document.getElementById('mode-display').innerText = "ENGINE: LIVE";
+                    printTerm("CAMERA: Feed established. Starting detection loop.");
                     runProcessing();
                 };
-            } catch (err) { printTerm("ERROR: Could not load AI or Camera."); }
+            } catch (err) { printTerm("ERROR: Could not load AI or Camera."); document.getElementById('boot-btn').innerText = "ERROR"; }
         }
 
         // Main AI Loop
@@ -192,7 +206,6 @@
             ctx = canvas.getContext('2d');
 
             const loop = async () => {
-                // Use native video resolution for 1:1 perfect alignment
                 const dims = { width: video.videoWidth, height: video.videoHeight };
                 faceapi.matchDimensions(canvas, dims);
 
@@ -202,11 +215,10 @@
                 const scaled = faceapi.resizeResults(detections, dims);
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                // Smart ID Reset
                 if (scaled.length === 0) {
                     if (Date.now() - lastSeenTime > 5000 && nextFaceId !== 1) {
                         nextFaceId = 1;
-                        printTerm("SYSTEM: Target lost for 5s. ID reset.");
+                        printTerm("SYSTEM: Targets lost for 5s. ID sequence reset.");
                     }
                 } else {
                     lastSeenTime = Date.now();
@@ -224,23 +236,19 @@
                     ctx.lineWidth = 3;
                     ctx.strokeRect(box.x, box.y, box.width, box.height);
 
-                    // 2. DRAW PERFECT 3D MESH (Native Face-API Tools)
+                    // 2. DRAW PERFECT 3D MESH
                     if(meshEnabled) {
                         const drawOptions = new faceapi.draw.DrawFaceLandmarksOptions({ 
-                            lineWidth: 1.5, 
-                            drawLines: true, 
-                            color: '#00ff66' // Cyber-Green
+                            lineWidth: 1.5, drawLines: true, color: '#00ff66'
                         });
                         drawOptions.draw(canvas, item.landmarks);
                     }
 
                     // 3. DRAW MIRRORED TEXT
-                    // We flip the context temporarily just for the text so it reads correctly
                     ctx.save();
                     ctx.scale(-1, 1);
                     ctx.fillStyle = '#5efcff';
                     ctx.font = 'bold 16px monospace';
-                    // The math to place text above the left corner on a mirrored canvas:
                     ctx.fillText(`ID#00${id}`, -(box.x + box.width), box.y - 10);
                     ctx.restore();
                 });
