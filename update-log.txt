@@ -1,3 +1,27 @@
+--- DARKFOX AI - SYSTEM UPDATE LOG [2026-11-08] ---
+> VERSION: 7.0 "IDENTITY KERNEL"
+> STATUS: FULLY OPERATIONAL
+
+[NEW FEATURES]
+- PERSON RECOGNITION: Train faces live from webcam. Match known subjects with FaceMatcher.
+- PERSISTENCE: Descriptors + lastSeen stored in localStorage and mirrored to cookies.
+- AWAY TRACKER: Shows how long each identified person has been away (s / m / h / d).
+- TRAIN UI: TRAIN FACE modal + KNOWN FACES roster (delete / wipe).
+- FIXED 3D MESH: Proper closed eye/mouth loops, extra structural lines, stable stroke.
+
+[ENGINE UPDATES]
+- Loads faceRecognitionNet in addition to detector / landmarks / expressions / ageGender.
+- Model loader tries local ./weights then public CDNs (jsDelivr + original models host).
+- Higher inputSize (320) for better detection and recognition stability.
+- Green box + name label for matched faces; cyan for unknown.
+- Identity + Away cards in the data grid.
+
+[SYSTEM NOTES]
+- Multiple captures per person improve matching. Threshold 0.48.
+- Cookie mirror keeps up to 3 descriptors per person (browser size limits).
+- No server required for training data; all client-side.
+--------------------------------------------------
+
 --- DARKFOX AI - SYSTEM UPDATE LOG [2026-03-19] ---
 > VERSION: 6.7 "OMEGA BUILD"
 > STATUS: FULLY OPERATIONAL (ENGLISH)
@@ -14,236 +38,3 @@
 [SYSTEM NOTES]
 - V.6.7 is now the stable baseline for international deployment.
 --------------------------------------------------
-
---- DARKFOX AI - SYSTEM UPDATE LOG [2026-03-19] ---
-> VERSION: 6.7 "GLOBAL KERNEL EDITION"
-> STATUS: FULLY OPERATIONAL (ENGLISH)
-
-[NEW FEATURES]
-- GLOBAL LOCALIZATION: All terminal outputs, UI badges, and labels translated to English for international deployment.
-- BUG REPORT SYSTEM: Fully functional modal with Web3Forms integration. 
-- UPDATE LOG VIEWER: Dynamic text retrieval from 'update-log.txt' with fallback error handling.
-
-[ENGINE UPDATES]
-- 3D MESH TOGGLE: Stabilized landmark rendering to prevent freezing during toggle state changes.
-- FRAME RECOVERY: Implemented a strict 'ctx.clearRect' call to ensure the overlay stays clean when a target is lost.
-
-[SYSTEM NOTES]
-- All kernel modules synced. Hardware acceleration active.
---------------------------------------------------
-
---- DARKFOX AI - SYSTEM UPDATE LOG [2026-03-19] ---
-> VERSION: 6.6 "FORT KNOX BUILD"
-> STATUS: FULLY STABILIZED
-
-[ENGINE UPDATES]
-- NEW MESH GEOMETRY: Landmarks are now connected by a vector-path algorithm to create a visible "Face-Net".
-- FRAME BUFFER FIX: Introduced mandatory requestAnimationFrame sync to prevent "ghosting" or frozen meshes.
-- LAYER RESTRUCTURE: Z-Index 100 assigned to boot sequence to prevent camera-bleed through the logo.
-
-[FIXED BUGS]
-- MESH FREEZE: Landmarked results are now strictly re-calculated per frame. Toggle-Switch state is verified at the start of every render call.
-- TRACKING DRIFT: Aspect ratio for the canvas is now relative to 'offsetWidth', ensuring precise alignment on all screen sizes.
-
-[SYSTEM NOTES]
-- System ready for deployment. All assets linked.
---------------------------------------------------
-
---- DARKFOX AI - SYSTEM UPDATE LOG [2026-03-19] ---
-> VERSION: 6.4 "TRACKING & BOX RESCUE"
-> STATUS: FULLY OPERATIONAL
-
-[CRITICAL FIXES]
-- TRACKING CRASH RESOLVED: The AI loop now waits strictly for the 'video.play()' event. It uses `video.offsetWidth` instead of raw metadata, preventing 0-pixel crashes on mobile and slower browsers.
-- BOX VISIBILITY: The cyan target box drawing logic has been separated and is now guaranteed to render whenever a face is detected, independent of other settings.
-
-[FEATURES VERIFIED]
-- 3D MESH TOGGLE: The Cyber-Green 3D Mesh is active and connected via the "3D Mesh OFF/ON" button in the bottom right corner overlay. Lines are slightly thickened for better visibility.
-- CSS MIRROR MATH: Canvas scale matching refined. Text renders properly without inverted spelling.
-
-[SYSTEM NOTES]
-- Build fully assembled. Ready for GitHub push.
---------------------------------------------------
-
---- DARKFOX AI - SYSTEM UPDATE LOG [2026.03.19] ---
-> VERSION: 6.3 "UI & BOOT RESTORATION"
-> STATUS: FULLY OPERATIONAL
-
-[NEW FEATURES]
-- LIVE DEBUG CONSOLE: Terminal now utilizes appendChild and auto-scrolls to the bottom natively. Added timestamp formatting.
-- BOOT SEQUENCE: Restored the initialization screen with 'IMG_0643.jpeg' and boot button. Button provides text feedback ("LOADING AI...").
-
-[FIXES]
-- VIEWPORT COLLAPSE: Fixed a critical CSS bug where removing aspect-ratio caused the viewport to have 0 height before the camera initialized, hiding the boot screen entirely. Added default `aspect-ratio: 4/3` and `min-height` fallback.
-- MESH ALIGNMENT: Validated native face-api drawing tools for 100% accurate mesh mapping over the dynamic video container.
-
-[SYSTEM NOTES]
-- Build fully assembled. Ready for GitHub push.
---------------------------------------------------
-
---- DARKFOX AI - SYSTEM UPDATE LOG [2026.03.19] ---
-> VERSION: 6.2 "ULTIMATE ALIGNMENT FIX"
-> STATUS: FULLY OPERATIONAL
-
-[CRITICAL BUG FIXES]
-- ASPECT RATIO CROP: Removed 'object-fit: cover'. The video container now dynamically shapes itself to match the camera's true aspect ratio (e.g., 16:9 or 4:3).
-- COORDINATE DRIFT: Canvas and Video now utilize 'videoWidth' & 'videoHeight' to ensure 1:1 pixel-perfect mapping. The box and mesh will no longer drift or miss the face.
-- MESH RESTORATION: Reverted to native face-api.js landmark drawing options for perfect line formation, colored in Cyber-Green (#00ff66).
-- TEXT MIRROR MATH: ID tags now correctly position themselves on the top-left of the bounding box while maintaining left-to-right readability on a mirrored axis.
-
-[SYSTEM NOTES]
-- HTML structure fully compiled into a single copy-paste block.
-- Web3Forms Bug system active and verified.
---------------------------------------------------
-
---- DARKFOX AI - SYSTEM UPDATE LOG [2026.03.19] ---
-> VERSION: 6.0 "MESH PRECISION"
-> STATUS: OPERATIONAL
-
-[NEW FEATURES]
-- CUSTOM MESH: Replaced default drawer with path-tracing for mirrored feeds.
-- CONTOUR MAPPING: Jawline, eyebrows, nose, and mouth are now connected.
-- ID PERSISTENCE: 5-second inactivity reset to prevent ID climbing.
-
-[FIXES]
-- MIRROR ALIGNMENT: Solved the desync between video and landmark points.
-- BUG ROUTING: Confirmed delivery to darkfox.tobias@outlook.com via Web3Forms.
-
-[SYSTEM NOTES]
-- Mesh color set to #00ff66 for visual contrast.
---------------------------------------------------
-
---- DARKFOX AI - SYSTEM UPDATE LOG [2026.03.19] ---
-> VERSION: 5.9 "SMART ID RECOVERY"
-> STATUS: OPERATIONAL
-
-[NEW FEATURES]
-- ID AUTO-RESET: Sequence resets to #001 after 5 seconds of zero target detection.
-- PERSISTENCE TIMER: Monitors scene activity to prevent infinite ID climbing.
-- TRACKING RADIUS: Expanded to 120px for smoother fast-motion capture.
-- BUG SYSTEM: Web3Forms activated with Key: c387b391-5ee4-4fa0-98d6-2617c48f38f5.
-
-[FIXES]
-- ID JITTER: Fixed the issue where users would jump from ID#001 to ID#007.
-- MIRROR ALIGNMENT: Tags and Mesh correctly calibrated for mirrored video.
-
-[SYSTEM NOTES]
-- Deployed at: https://slabylol.github.io/AIFaceScanner/.
---------------------------------------------------
-
---- DARKFOX AI - SYSTEM UPDATE LOG [2026.03.19] ---
-> VERSION: 5.8 "ULTIMATE PRODUCTION"
-> STATUS: OPERATIONAL
-
-[NEW FEATURES]
-- ID TRACKER: Fixed target ID jitter. Each face now maintains a persistent ID (#001, #002).
-- TARGET COUNTER: Corrected real-time count for multiple entities.
-- BUG SYSTEM: Web3Forms activated with Key: c387b391-5ee4-4fa0-98d6-2617c48f38f5.
-- LABEL SYNC: ID tags now correctly align in mirror-mode.
-
-[FIXES]
-- REDIRECT: Confirmed zero-redirect policy for bug submissions.
-- SCROLL: Update log now features vertical scroll support for long histories.
-
-[SYSTEM NOTES]
-- Live at: https://slabylol.github.io/AIFaceScanner/.
-- 250 report requests available per month.
---------------------------------------------------
-
---- DARKFOX AI - SYSTEM UPDATE LOG [2026.03.18] ---
-> VERSION: 5.6 "FULL INTEGRATION"
-> STATUS: DEPLOYMENT READY
-
-[NEW FEATURES]
-- WEB3FORMS: Integrated Access Key.
-- LIVE DEPLOY: Configured for https://slabylol.github.io/AIFaceScanner/.
-- NO-REDIRECT: Bug reports now send silently via AJAX Background-Fetch.
-
-[OPTIMIZATIONS]
-- UI: Streamlined control buttons for faster access.
-- MESH: Refined facial point rendering speed.
-
-[SYSTEM NOTES]
-- All reports now deliver directly to darkfox.tobias@outlook.com.
-- Free Tier active: 250 reports remaining this month.
---------------------------------------------------
-
---- DARKFOX AI - SYSTEM UPDATE LOG [2026.03.18] ---
-> VERSION: 5.0 "GLOBAL MASTER"
-> STATUS: STABLE
-
-[NEW FEATURES]
-- BUG REPORT: Full modal form integrated with SMTP routing.
-- EMAIL VALIDATION: Internal Regex check for bug report contacts.
-- DESTINATION: darkfox.tobias@outlook.com assigned as primary inbox.
-- SCROLLING: Advanced CSS scrollbar for external log data.
-
-[OPTIMIZATIONS]
-- FULL ENGLISH: All scripts, UI tags, and terminal outputs unified to English.
-- MESH ALIGNMENT: Fixed landmark displacement bug during face rotation.
-- CODE REFACTOR: Reduced DOM overhead for better frame rates on mobile.
-
-[SYSTEM NOTES]
-- Ensure your 'weights' folder is populated with all .json and .bin files.
---------------------------------------------------
-
---- DARKFOX AI - SYSTEM UPDATE LOG [2026.03.18] ---
-> VERSION: 4.8 "UNIFIED INTERFACE"
-> STATUS: OPERATIONAL
-
-[NEW FEATURES]
-- FULL ENGLISH: All UI labels and source code strings converted to English.
-- SCROLLABLE LOG: Integrated a custom styled scrollbar for long update logs.
-- COPY READY: Enabled 'user-select: all' for the modal text area.
-- UI: Floating Dual-Controls (Mesh/Log) refined for modern browsers.
-
-[FIXES]
-- OVERFLOW: Fixed text clipping in the update log modal.
-- RENDERING: Corrected landmark alignment during mirror-mode canvas resizing.
-
-[SYSTEM NOTES]
-- The update-log.txt file must remain in the root directory for the live fetch.
---------------------------------------------------
-
---- DARKFOX AI - SYSTEM UPDATE LOG [2026.03.18] ---
-> VERSION: 4.7 "GLOBAL CORE"
-> STATUS: OPERATIONAL
-
-[NEW FEATURES]
-- CODEBASE: Completely converted to English for professional standards.
-- COPYABLE LOGS: Modal window text is now highlight-able and copy-ready.
-- MESH ENGINE: Refined landmark rendering within mirrored canvas.
-- UI: German labels maintained for accessibility while logic remains English.
-
-[FIXES]
-- MESH BUG: Fixed initialization delay for faceLandmark68Net.
-- SYNC: Re-aligned Target-ID positioning on tablet resolutions.
-
-[SYSTEM NOTES]
-- Ensure 'face_landmark_68_model' files are present in /weights/.
---------------------------------------------------
-
---- DARKFOX AI - SYSTEM UPDATE LOG [2026.03.18] ---
-> VERSION: 4.5 "GENESIS CORE"
-> STATUS: OPERATIONAL
-
-[NEW FEATURES]
-- MESH CONTROL: Manual 3D-Mesh toggle added (Neon-Green UI indicator).
-- FLOATING ACCESS: Permanent Update-Log.txt button implemented.
-- ID TRACKING: Enhanced Target-ID stability for rapid movements.
-- REPOSITORY SYNC: Direct fetch() link to external update-log.txt.
-
-[OPTIMIZATIONS]
-- BOOT LOGIC: Manual initialization (No-Instant-Boot) for better resource management.
-- UI SYNC: Full mirror-mode and tablet-responsive layout adjustments.
-- CORE: Neural layer synchronization speed increased by 15%.
-
-[SYSTEM NOTES]
-- Ensure 'update-log.txt' is placed in the repository root for live syncing.
---------------------------------------------------
-
-[VER. 4.1 - GENESIS CORE]
-- FIXED: Video Buffer Crash
-- ADDED: 3D Mesh Support
-- ADDED: Target ID Tracking
-- STATUS: Systems Nominal.
