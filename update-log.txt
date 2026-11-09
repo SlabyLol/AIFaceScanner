@@ -1,40 +1,22 @@
---- DARKFOX AI - SYSTEM UPDATE LOG [2026-11-08] ---
-> VERSION: 7.0 "IDENTITY KERNEL"
-> STATUS: FULLY OPERATIONAL
+--- DARKFOX AI - SYSTEM UPDATE LOG [2026-11-09] ---
+> VERSION: 8.0 "GUIDED SCAN"
+> STATUS: FULLY OPERATIONAL (DE)
 
 [NEW FEATURES]
-- PERSON RECOGNITION: Train faces live from webcam. Match known subjects with FaceMatcher.
-- PERSISTENCE: Descriptors + lastSeen stored in localStorage and mirrored to cookies.
-- AWAY TRACKER: Shows how long each identified person has been away (s / m / h / d).
-- TRAIN UI: TRAIN FACE modal + KNOWN FACES roster (delete / wipe).
-- FIXED 3D MESH: Proper closed eye/mouth loops, extra structural lines, stable stroke.
+- ANIMIERTE GESICHTS-ANLEITUNG: 5-Schritt-Scan mit Oval-Overlay, Scan-Linie, Fortschrittsbalken
+- SCHRITTE: Mitte halten → geradeaus → links drehen → rechts drehen → leicht nach oben
+- AUTO-CAPTURE: Hält Pose stabil (~12 Frames) → Sample wird automatisch gespeichert
+- PFEIL-HINWEISE: Animierte Pfeile für Links / Rechts / Oben
+- OVAL-FEEDBACK: Cyan = suchen, Rot = falsch, Grün = korrekt + Pulse
+- Deutsche UI für Scan-Flow und Erkennung
 
-[ENGINE UPDATES]
-- Loads faceRecognitionNet in addition to detector / landmarks / expressions / ageGender.
-- Model loader tries local ./weights then public CDNs (jsDelivr + original models host).
-- Higher inputSize (320) for better detection and recognition stability.
-- Green box + name label for matched faces; cyan for unknown.
-- Identity + Away cards in the data grid.
-
-[SYSTEM NOTES]
-- Multiple captures per person improve matching. Threshold 0.48.
-- Cookie mirror keeps up to 3 descriptors per person (browser size limits).
-- No server required for training data; all client-side.
---------------------------------------------------
-
---- DARKFOX AI - SYSTEM UPDATE LOG [2026-03-19] ---
-> VERSION: 6.7 "OMEGA BUILD"
-> STATUS: FULLY OPERATIONAL (ENGLISH)
-
-[NEW FEATURES]
-- CONNECTED 3D MESH: Landmarks are now linked by vector paths (jaw, eyebrows, nose, eyes, mouth) for a skeletal digital look.
-- UI REFINEMENT: Increased viewport padding, added border-accents to badges, and improved terminal readability.
-- GLOBAL LOCALIZATION: Full English language support across all modules.
-
-[ENGINE UPDATES]
-- RENDER PIPELINE: Switched to a dual-pass rendering method (Path-Stroke then Point-Fill) for the Mesh to ensure maximum visibility.
-- ERROR HANDLING: Added fallback placeholder for the boot logo and refined directory warnings in the console.
+[ENGINE]
+- Pose-Checks über Landmark-Yaw/Pitch (Nase vs. Augen)
+- 5 Descriptor-Samples pro Person aus verschiedenen Winkeln
+- Erkennung + Away-Tracker wie in v7 unverändert
 
 [SYSTEM NOTES]
-- V.6.7 is now the stable baseline for international deployment.
+- GESICHT SCANNEN → Name → geführter Scan
+- Daten in localStorage + Cookie-Spiegel
 --------------------------------------------------
+

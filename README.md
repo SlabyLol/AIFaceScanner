@@ -1,27 +1,23 @@
 # DarkFox AI Face Scanner (AIFaceScanner)
 
-Browser face detection + recognition terminal (face-api.js / TensorFlow.js).
+Browser face detection + recognition with **guided animated face scan**.
 
-**Live demo:** https://slabylol.github.io/AIFaceScanner/
+**Live:** https://slabylol.github.io/AIFaceScanner/
 
-## v7.0 features
-- Live webcam detection (age, gender, emotion)
-- **Train faces** from the camera (name + capture)
-- **Recognize** trained people and show **how long they were away**
-- Storage: `localStorage` + cookie fallback
-- Toggleable **3D landmark mesh** (fixed closed loops)
-- Kernel log + emergency report UI
+## v8.0 – Guided Scan
+- Animated oval overlay + scan line
+- 5 steps: center → front → turn left → turn right → look up
+- Auto-capture when pose is held
+- Arrow hints + progress bar
+- Train → recognize → show how long away
+- localStorage + cookie storage
 
-## Usage
-1. Open the page (GitHub Pages or local server).
-2. Click **INITIALIZE AI CORE** (allow camera).
-3. **TRAIN FACE** → enter name → CAPTURE (repeat for better accuracy).
-4. When that person reappears, **IDENTITY** and **AWAY** update.
-5. **KNOWN FACES** to list / delete trained subjects.
-6. **3D MESH** to toggle the green landmark wireframe.
-
-## Models
-Weights are loaded from `./weights/` if present, otherwise from public CDNs.
+## Nutzung
+1. **AI CORE STARTEN** (Kamera erlauben)
+2. **GESICHT SCANNEN** → Name eingeben
+3. Anleitung folgen (Kopf bewegen, bis Oval grün wird)
+4. Danach wird die Person erkannt; **WEG** zeigt, wie lange sie weg war
+5. **BEKANNTE GESICHTER** zum Verwalten
 
 ## License
 MIT
