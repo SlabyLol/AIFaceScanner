@@ -1,1 +1,98 @@
-<PLACEHOLDER>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>DarkFox AI - Face Scan v8.0</title>
+<script src="dist/face-api.min.js"></script>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<div class="controls">
+    <button id="btn-scan" class="ctrl-btn" onclick="startEnrollFlow()">GESICHT SCANNEN</button>
+    <button id="btn-roster" class="ctrl-btn" onclick="openRoster()">BEKANNTE GESICHTER</button>
+    <button id="btn-mesh" class="ctrl-btn" onclick="toggleMesh()">3D MESH: AUS</button>
+    <button id="btn-log" class="ctrl-btn" onclick="loadLogs()">KERNEL LOG</button>
+</div>
+
+<div id="modal-name" class="modal">
+    <div class="modal-content" style="border-color: var(--train);">
+        <span class="close-x" onclick="closeModal('modal-name')">&times;</span>
+        <h3 style="color: var(--train); margin-bottom: 10px;">NEUES GESICHT REGISTRIEREN</h3>
+        <p style="font-size:11px;color:#8899aa;margin-bottom:12px;line-height:1.4;">
+            Gib einen Namen ein. Danach führt dich die animierte Anleitung durch den Scan
+            (geradeaus, links, rechts, oben). Mehrere Winkel = bessere Erkennung.
+        </p>
+        <input type="text" id="enroll-name" class="input" placeholder="Name (z.B. Alex)" maxlength="32" autocomplete="off">
+        <button class="btn-main" style="width:100%;border-color:var(--train);color:var(--train);" onclick="beginGuidedScan()">SCAN STARTEN</button>
+    </div>
+</div>
+
+<div id="modal-roster" class="modal">
+    <div class="modal-content" style="border-color: var(--id); max-width: 500px;">
+        <span class="close-x" onclick="closeModal('modal-roster')">&times;</span>
+        <h3 style="color: var(--id); margin-bottom: 12px;">BEKANNTE GESICHTER</h3>
+        <div id="roster-list" style="max-height:340px;overflow-y:auto;"></div>
+        <button class="btn-main" style="width:100%;margin-top:12px;border-color:var(--err);color:var(--err);" onclick="clearAllFaces()">ALLE LÖSCHEN</button>
+    </div>
+</div>
+
+<div id="modal-log" class="modal">
+    <div class="modal-content" style="border-color: var(--warn); max-width: 580px;">
+        <span class="close-x" onclick="closeModal('modal-log')">&times;</span>
+        <h3 style="color: var(--warn); margin-bottom: 14px;">SYSTEM HISTORY</h3>
+        <div id="log-content" style="font-size:11px;white-space:pre-wrap;color:#8899aa;max-height:340px;overflow-y:auto;background:#000;padding:12px;border:1px solid #111;">Lade Log...</div>
+    </div>
+</div>
+
+<div class="main">
+    <div class="viewport" id="cam-wrapper">
+        <div class="badge" id="mode-display">CORE: STANDBY</div>
+        <div class="badge" id="target-count">TARGETS: 0</div>
+
+        <div class="progress-wrap" id="progress-wrap">
+            <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+            <div class="progress-label" id="progress-label">Schritt 0/5</div>
+        </div>
+
+        <div id="boot-screen">
+            <img src="IMG_0643.jpeg" class="boot-logo" onerror="this.src='https://via.placeholder.com/120/04080d/5efcff?text=DARKFOX'">
+            <button class="btn-main" id="boot-btn" onclick="initAI()">AI CORE STARTEN</button>
+        </div>
+
+        <video id="video-feed" autoplay muted playsinline></video>
+
+        <div id="guide-layer" style="display:none;">
+            <div class="face-oval" id="face-oval">
+                <div class="scan-line" id="scan-line"></div>
+            </div>
+            <div class="arrow-hint" id="arrow-left">←</div>
+            <div class="arrow-hint" id="arrow-right">→</div>
+            <div class="arrow-hint" id="arrow-up">↑</div>
+            <div class="guide-banner" id="guide-banner">
+                <div class="guide-step" id="guide-step">SCHRITT 1/5</div>
+                <div class="guide-text" id="guide-text">Gesicht in den Kreis halten</div>
+                <div class="guide-hint" id="guide-hint">Kamera gerade halten · gutes Licht</div>
+                <div class="step-dots" id="step-dots"></div>
+            </div>
+        </div>
+
+        <button class="cancel-scan" id="cancel-scan" onclick="cancelEnroll()">ABBRECHEN</button>
+    </div>
+
+    <div class="data-grid">
+        <div class="data-card"><span class="tag">IDENTITÄT</span><span id="out-name" class="val">--</span></div>
+        <div class="data-card"><span class="tag">WEG</span><span id="out-away" class="val">--</span></div>
+        <div class="data-card"><span class="tag">BIOMETRIE</span><span id="out-gender" class="val">--</span></div>
+        <div class="data-card"><span class="tag">EMOTION</span><span id="out-emotion" class="val">--</span></div>
+    </div>
+
+    <div class="terminal" id="term-out">
+        <div>> [SYSTEM] Warte auf Kernel-Autorisierung...</div>
+    </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
